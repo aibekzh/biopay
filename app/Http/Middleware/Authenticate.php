@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Contracts\Auth\Factory as Auth;
+use App\Helpers\CookieStorage;
+
 
 class Authenticate
 {
@@ -17,7 +19,8 @@ class Authenticate
     /**
      * Create a new middleware instance.
      *
-     * @param  \Illuminate\Contracts\Auth\Factory  $auth
+     * @param \Illuminate\Contracts\Auth\Factory $auth
+     *
      * @return void
      */
     public function __construct(Auth $auth)
@@ -28,36 +31,54 @@ class Authenticate
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  string|null  $guard
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure                 $next
+     * @param string|null              $guard
+     *
      * @return mixed
      */
     public function handle($request, Closure $next, $guard = null)
     {
         try {
+            if (!$this->auth->guard($guard)
+                            ->check()) {
 
-            if ($this->auth->guard($guard)->guest()) {
+                if ($request->cookie('access_token') != null) {
+                    $request->headers->set('Authorization', 'Bearer ' . $request->cookie('access_token'));
+
+                }
+            }
+
+            if (!$this->auth->guard($guard)
+                            ->check()) {
+                $this->cookieDelete("access_token");
 
                 return response()->json(
                     [
                         'success' => false,
                         'message' => 'Вы не авторизованы',
-                    ],401
+                    ], 401
                 );
             }
 
             return $next($request);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
+            $this->cookieDelete("access_token");
 
             return response()->json(
                 [
                     'success' => false,
                     'message' => 'Вы не авторизованы',
-                ],401
+                ], 401
             );
         }
 
 
+    }
+
+    static function cookieDelete($key)
+    {
+        $cookie = new CookieStorage();
+        $cookie->delete($key);
     }
 }
