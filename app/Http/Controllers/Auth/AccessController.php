@@ -17,6 +17,7 @@ use mysql_xdevapi\Exception;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use GuzzleHttp\Client;
+use App\Helpers\CookieStorage;
 
 
 class AccessController extends Controller
@@ -49,16 +50,18 @@ class AccessController extends Controller
     /**
      * Create a new controller instance.
      *
-     * @param  \League\OAuth2\Server\AuthorizationServer  $server
-     * @param  \Laravel\Passport\TokenRepository  $tokens
-     * @param  \Lcobucci\JWT\Parser  $jwt
+     * @param \League\OAuth2\Server\AuthorizationServer $server
+     * @param \Laravel\Passport\TokenRepository         $tokens
+     * @param \Lcobucci\JWT\Parser                      $jwt
+     *
      * @return void
      */
-    public function __construct(AuthorizationServer $server,
-                                TokenRepository $tokens,
-                                JwtParser $jwt)
-    {
-        $this->jwt = $jwt;
+    public function __construct(
+        AuthorizationServer $server,
+        TokenRepository $tokens,
+        JwtParser $jwt
+    ) {
+        $this->jwt    = $jwt;
         $this->server = $server;
         $this->tokens = $tokens;
     }
@@ -66,35 +69,52 @@ class AccessController extends Controller
     /**
      * Authorize a client to access the user's account.
      *
-     * @param  \Psr\Http\Message\ServerRequestInterface  $request
+     * @param \Psr\Http\Message\ServerRequestInterface $request
+     *
      * @return \Illuminate\Http\Response
      */
     public function issueToken(ServerRequestInterface $request)
     {
         try {
-            $result =  $this->withErrorHandling(function () use ($request) {
-                return $this->convertResponse(
-                    $this->server->respondToAccessTokenRequest($request, new Psr7Response)
-                );
-            });
-
-            $client = new Client();
-            $res = $client->request('GET', 'http://localhost/api/check',
-            [
-                'headers' => ['Authorization' => 'Bearer ' . json_decode($result->content())->access_token  ]
-            ]
+            $result = $this->withErrorHandling(
+                function () use ($request) {
+                    return $this->convertResponse(
+                        $this->server->respondToAccessTokenRequest($request, new Psr7Response)
+                    );
+                }
             );
-            $user = json_decode($res->getBody()->getContents());
-            Cache::put(json_decode($result->content())->access_token, $user, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN',15)));
-            return response()->json([
-                'success'=>true,
-                'data'=>json_decode($result->content())
-                                    ]);
-        }catch (\Exception $e){
 
-            return response()->json([
-                                        'success'=>false,
-                                        'message'=>$e->getMessage()], 401);
+            $client       = new Client();
+            $res          = $client->request(
+                'GET', url('/') . '/api/check',
+                [
+                    'headers' => ['Authorization' => 'Bearer ' . json_decode($result->content())->access_token],
+                ]
+            );
+            $user         = json_decode(
+                $res->getBody()
+                    ->getContents()
+            );
+            $access_token = json_decode($result->content())->access_token;
+            Cache::put($access_token, $user, Carbon::now()
+                                                   ->addMinutes(env('TOKEN_EXPIRE_IN', 15))
+            );
+            $cookie = new CookieStorage();
+            $cookie->set('access_token', $access_token);
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'data'    => json_decode($result->content()),
+                ]
+            );
+        } catch (\Exception $e) {
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => $e->getMessage()], 401
+            );
         }
 
     }

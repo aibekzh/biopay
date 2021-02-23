@@ -44,7 +44,7 @@ $api->version('v1',function ($api){
                     'uses' => 'App\Http\Controllers\Auth\VerificationController@verify',
                 ]);
 
-    $api->group(['namespace'=>'App\Http\Controllers','middleware'=>['auth:api','cors']],function ($api){
+    $api->group(['namespace'=>'App\Http\Controllers','middleware'=>['auth:api']],function ($api){
 
         $api->get('email/resend','Auth\VerificationController@resend');
         $api->get('check','Auth\AuthController@user');
