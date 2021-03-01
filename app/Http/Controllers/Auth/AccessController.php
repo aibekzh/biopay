@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -13,10 +13,11 @@ use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
 use Lcobucci\JWT\Parser as JwtParser;
 use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\ResponseTypes\BearerTokenResponse;
 use mysql_xdevapi\Exception;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
-use GuzzleHttp\Client;
+use App\Http\Controllers\Auth\AuthController;
 use App\Helpers\CookieStorage;
 
 
@@ -67,13 +68,11 @@ class AccessController extends Controller
     }
 
     /**
-     * Authorize a client to access the user's account.
-     *
-     * @param \Psr\Http\Message\ServerRequestInterface $request
-     *
-     * @return \Illuminate\Http\Response
+     * @param ServerRequestInterface $request
+     * @param Request $req
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function issueToken(ServerRequestInterface $request)
+    public function issueToken(ServerRequestInterface $request,Request $req)
     {
         try {
             $result = $this->withErrorHandling(
@@ -83,24 +82,17 @@ class AccessController extends Controller
                     );
                 }
             );
-
-            $client       = new Client();
-            $res          = $client->request(
-                'GET', url('/') . '/api/check',
-                [
-                    'headers' => ['Authorization' => 'Bearer ' . json_decode($result->content())->access_token],
-                ]
-            );
-            $user         = json_decode(
-                $res->getBody()
-                    ->getContents()
-            );
             $access_token = json_decode($result->content())->access_token;
-            Cache::put($access_token, $user, Carbon::now()
-                                                   ->addMinutes(env('TOKEN_EXPIRE_IN', 15))
-            );
-            $cookie = new CookieStorage();
-            $cookie->set('access_token', $access_token);
+            $refresh_token = json_decode($result->content())->refresh_token;
+            $check = new AuthController($this->server,$this->tokens,$this->jwt);
+            $req->headers->set('Authorization', 'Bearer ' .$access_token);
+            $user = json_decode($check->user($req)->content())->data;
+            if(config('app.env') != 'testing'){
+                Cache::put($access_token, ['id'=>$user->id,'email'=>$user->email], Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+                $cookie = new CookieStorage();
+                $cookie->set('access_token', $access_token);
+                $cookie->set('refresh_token', $refresh_token);
+            }
 
             return response()->json(
                 [

@@ -13,33 +13,24 @@ use TestCase;
 class AuthControllerTest extends TestCase
 {
     use DatabaseTransactions;
-    protected $faker;
     protected $user;
     public    $data;
     public    $data_for_refresh;
     public    $token;
+    private   $faker;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->faker    = Factory::create();
-        $this->user     = [
-                              'name'  => $this->faker->name,
-                              'email' => $this->faker->unique()->safeEmail,
-                          ];
-
+        $this->user     = User::factory()->create();
         $this->data     = [
-                              'username'     => $this->user['email'],
+                              'username'     => $this->user->email,
                               'password'     => 'secret_secret',
                               'grant_type'   => 'password',
                               'client_id'    => 2,
                               'client_secret'=> '2Q0hMQY5iPy5yeYPm1g0Tb5uZ9tAijIRlIvveOHW',
                           ];
-
-        $user           = new User;
-        $user->name     = $this->user['name'];
-        $user->email    = $this->user['email'];
-        $user->password = Hash::make('secret_secret');
-        $user->save();
         $this->post('/api/login', $this->data);
         $this->token = $this->response->original;
         $this->data_for_refresh = [
