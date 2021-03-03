@@ -112,7 +112,7 @@ class AuthController extends AccessTokenController
     }
 
     /**
-     * @OA\Post(
+     * @OA\Get(
      *   path="/api/logout",
      *   operationId="logout",
      *   tags={"auth"},
