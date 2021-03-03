@@ -15,6 +15,64 @@ use Laravel\Passport\Http\Controllers\AccessTokenController;
 
 class AuthController extends AccessTokenController
 {
+    /**
+     * @OA\Post(
+     ** path="/api/register",
+     *   tags={"auth"},
+     *   summary="Sign up",
+     *   operationId="register",
+     *
+     *  @OA\Parameter(
+     *      name="name",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *  @OA\Parameter(
+     *      name="email",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="password",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="password_confirmation",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=201,
+     *       description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Пользователь успешно зарегистрирован"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=400,
+     *      description="Bad Request"
+     *   ),
+     *)
+     **/
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function register(Request $request)
     {
         try{
@@ -53,6 +111,39 @@ class AuthController extends AccessTokenController
         }
     }
 
+    /**
+     * @OA\Post(
+     *   path="/api/logout",
+     *   operationId="logout",
+     *   tags={"auth"},
+     *   security={ {"bearer": {} }},
+     *   summary="Logout",
+     *   description="Logout user",
+     *
+     *   @OA\Response(
+     *      response=200,
+     *      description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Успешный выход из системы"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=401,
+     *      description="Unauthenticated",
+     *      @OA\JsonContent(
+     *          type = "object",
+     *          @OA\Property(property="success", type="boolean", example="false"),
+     *          @OA\Property(property="message", type="string", example="Вы не авторизованы"),
+     *      ),
+     *   ),
+     *)
+     **/
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logout(Request $request)
     {
         try{
@@ -79,6 +170,39 @@ class AuthController extends AccessTokenController
         }
     }
 
+    /**
+     * @OA\Get(
+     *   path="/api/check",
+     *   operationId="check",
+     *   tags={"auth"},
+     *   security={ {"bearer": {} }},
+     *   summary="Check the User",
+     *   description="Check",
+     *
+     *   @OA\Response(
+     *      response=200,
+     *      description="Success",
+     *      @OA\JsonContent(
+     *          type = "object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="data", type="object", example={"id":354,"name": "test", "email": "test@test.com", "email_verified_at": null, "balance": 0, "remember_token": null, "created_at": "2021-02-24T03:30:57.000000Z","updated_at": "2021-02-24T03:30:57.000000Z"}),
+     *      ),
+     *   ),
+     *   @OA\Response(
+     *      response=401,
+     *      description="Unauthenticated",
+     *      @OA\JsonContent(
+     *          type = "object",
+     *          @OA\Property(property="success", type="boolean", example="false"),
+     *          @OA\Property(property="message", type="string", example="Вы не авторизованы"),
+     *      ),
+     *   ),
+     *)
+     **/
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function user(Request $request)
     {
         try{

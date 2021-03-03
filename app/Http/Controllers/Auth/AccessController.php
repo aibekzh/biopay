@@ -68,6 +68,41 @@ class AccessController extends Controller
     }
 
     /**
+     * @OA\Post(
+     * path="/api/login",
+     * summary="Sign in",
+     * description="Login by email, password",
+     * operationId="login",
+     * tags={"auth"},
+     * @OA\RequestBody(
+     *    required=true,
+     *    description="Pass user credentials",
+     *    @OA\JsonContent(
+     *       required={"grant_type","client_id","client_secret"},
+     *       @OA\Property(property="username", type="string", format="email", example="test@test.com"),
+     *       @OA\Property(property="password", type="string", format="password", example="secret"),
+     *       @OA\Property(property="grant_type", type="string", example="password"),
+     *       @OA\Property(property="client_id", type="integer", example="2"),
+     *       @OA\Property(property="client_secret", type="string"),
+     *       @OA\Property(property="refresh_token", type="string"),
+     *    ),
+     * ),
+     *   @OA\Response(
+     *      response=201,
+     *       description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="data", type="object", example={"token_type":"Bearer","expires_in": 900, "access_token": "*****", "refresh_token": "*****"}),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=400,
+     *      description="Bad Request"
+     *   ),
+     * )
+     */
+    /**
      * @param ServerRequestInterface $request
      * @param Request $req
      * @return \Illuminate\Http\JsonResponse
@@ -108,6 +143,5 @@ class AccessController extends Controller
                     'message' => $e->getMessage()], 401
             );
         }
-
     }
 }

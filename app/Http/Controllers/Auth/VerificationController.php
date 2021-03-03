@@ -9,6 +9,80 @@ use App\Http\Controllers\Controller;
 
 class VerificationController extends Controller
 {
+
+    /**
+     * @OA\Get (
+     *   path="/api/email/verify/{id}",
+     *   operationId="verify",
+     *   tags={"auth"},
+     *   summary="Verify the User",
+     *   description="Verify the user",
+     *
+     *   @OA\Parameter(
+     *      name="id",
+     *      in="path",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="integer"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="access_token",
+     *      in="query",
+     *      required=false,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="expires",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="hash",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="signature",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=202,
+     *      description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Ваша учетная запись успешно подтверждена"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=410,
+     *      description="verify invalid",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Указан недействительный / просроченный URL"),
+     *      )
+     *   ),
+     *)
+     **/
+    /**
+     * @param $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function verify($id, Request $request) {
         try{
 
@@ -44,6 +118,39 @@ class VerificationController extends Controller
         }
     }
 
+    /**
+     * @OA\Get (
+     *   path="/api/email/resend",
+     *   operationId="email/resend",
+     *   tags={"auth"},
+     *   security={ {"Bearer": {} }},
+     *   summary="Send verify message to the User",
+     *   description="Send verify message to the user",
+     *
+     *   @OA\Response(
+     *      response=200,
+     *      description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Мы отправили письмо на Ваш почтовый ящик с инструкцией по подтверждению почты!"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=401,
+     *      description="Unauthenticated",
+     *      @OA\JsonContent(
+     *          type = "object",
+     *          @OA\Property(property="success", type="boolean", example="false"),
+     *          @OA\Property(property="message", type="string", example="Вы не авторизованы"),
+     *      ),
+     *   )
+     *),
+     *)
+     **/
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function resend() {
         try{
 

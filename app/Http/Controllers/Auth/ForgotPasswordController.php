@@ -12,6 +12,51 @@ use mysql_xdevapi\Exception;
 
 class ForgotPasswordController extends Controller
 {
+    /**
+     * @OA\Post (
+     *   path="/api/password/email",
+     *   operationId="api/password/email",
+     *   tags={"auth"},
+     *   summary="Send message to reset password",
+     *   description="Send message to reset password",
+     *
+     *   @OA\Parameter(
+     *      name="email",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *
+     *   @OA\Response(
+     *      response=200,
+     *      description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Мы отправили письмо на Ваш почтовый ящик с инструкцией по сбросу пароля!"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=412,
+     *      description="Precondition Failed",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Почта не найдена!"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=400,
+     *      description="Validation Failed",
+     *   ),
+     *)
+     **/
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
     public function forgot(Request $request) {
         try {
             $validator = Validator::make($request->all(),['email' => 'required|email']);
@@ -30,7 +75,7 @@ class ForgotPasswordController extends Controller
                 [
                     "success" => false,
                     'message' => $validator->errors()
-                ]
+                ],400
             );
 
         }catch (\Exception $exception){
@@ -44,6 +89,75 @@ class ForgotPasswordController extends Controller
         }
     }
 
+    /**
+     * @OA\Post (
+     *   path="/password/reset",
+     *   operationId="password/reset",
+     *   tags={"auth"},
+     *   summary="Reset the Password",
+     *   description="Reset the password",
+     *
+     *   @OA\Parameter(
+     *      name="token",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="email",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="password",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="password_confirmation",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *
+     *   @OA\Response(
+     *      response=200,
+     *      description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Пароль успешно изменен"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=412,
+     *      description="Precondition Failed",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Этот токен сброса пароля недействителен."),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=400,
+     *      description="Validation Failed",
+     *   ),
+     *)
+     **/
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function reset(Request $request) {
         try {
             $validator = Validator::make($request->all(),
@@ -66,7 +180,7 @@ class ForgotPasswordController extends Controller
                         [
                             "success" => false,
                             "message" => trans('passwords.token'),
-                        ], 400,[],JSON_UNESCAPED_UNICODE
+                        ], 412,[],JSON_UNESCAPED_UNICODE
                     );
                 }
 
@@ -81,7 +195,8 @@ class ForgotPasswordController extends Controller
             return response()->json([
                                         "success" => false,
                                         "message" => $validator->errors(),
-                                    ]);
+                                    ],400
+            );
         }catch (\Exception $exception){
 
             return response()->json(
@@ -134,7 +249,7 @@ class ForgotPasswordController extends Controller
             [
                 "success" => false,
                 "message" => trans($response)
-            ],200,[],JSON_UNESCAPED_UNICODE
+            ],412,[],JSON_UNESCAPED_UNICODE
         );
     }
 
