@@ -68,6 +68,7 @@ $app->alias('mail.manager', Illuminate\Contracts\Mail\Factory::class);
 $app->configure('app');
 $app->configure('auth');
 $app->configure('cors');
+$app->configure('swagger-lume');
 
 
 /*
@@ -115,6 +116,7 @@ $app->configure('cors');
  $app->register(Illuminate\Mail\MailServiceProvider::class);
  $app->register(\App\Providers\MailServiceProvider::class);
  $app->register(Illuminate\Auth\Passwords\PasswordResetServiceProvider::class);
+ $app->register(\SwaggerLume\ServiceProvider::class);
 
 
 
