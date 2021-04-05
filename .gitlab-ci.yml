@@ -2,7 +2,7 @@ variables:
   PROD_DIR: /var/www/module_authorization
   STAGE_DIR: /var/www/module_authorization_staging
   BUILD_DIR: /var/www/builds/$CI_PROJECT_PATH
-  REPOSITORY: adata-modules/module_authorization.git
+  REPOSITORY: adata-modules/module_authorization-2.0.git
   RSYNC_OPTIONS: "-azcCh --chmod=0755 --executability --progress --delete-before"
   RSYNC_INCLUDE_LIST: data/deployment/include.txt
   RSYNC_EXCLUDE_LIST: data/deployment/exclude.txt
