@@ -23,6 +23,8 @@ variables:
     - sudo -u www-data git reset --hard
     - sudo -u www-data git pull origin $BRANCH
     - sudo -u www-data composer install
+    - sudo -u www-data php artisan swagger-lume:generate
+
 
 .unit_test: &unit_test
   stage: test
