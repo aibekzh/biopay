@@ -20,6 +20,7 @@ variables:
       fi
   script:
     - cd $BUILD_DIR
+    - sudo -u www-data git reset --hard
     - sudo -u www-data git pull origin $BRANCH
     - sudo -u www-data composer install
 
