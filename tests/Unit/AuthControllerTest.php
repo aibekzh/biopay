@@ -15,6 +15,7 @@ class AuthControllerTest extends TestCase
     use DatabaseTransactions;
     protected $user;
     public    $data;
+    public    $data_for_access;
     public    $data_for_refresh;
     public    $token;
     private   $faker;
@@ -27,18 +28,15 @@ class AuthControllerTest extends TestCase
         $this->data     = [
                               'username'     => $this->user->email,
                               'password'     => 'secret_secret',
-                              'grant_type'   => 'password',
-                              'client_id'    => 2,
-                              'client_secret'=> '2Q0hMQY5iPy5yeYPm1g0Tb5uZ9tAijIRlIvveOHW',
                           ];
         $this->post('/api/login', $this->data);
         $this->token = $this->response->original;
+        $this->data_for_access = [
+            'access_token' => $this->token['data']['access_token'],
+        ];
         $this->data_for_refresh = [
-                                      'refresh_token' => $this->token['data']['refresh_token'],
-                                      'grant_type'    => 'refresh_token',
-                                      'client_id'     => 2,
-                                      'client_secret' => '2Q0hMQY5iPy5yeYPm1g0Tb5uZ9tAijIRlIvveOHW',
-                                  ];
+            'refresh_token' => $this->token['data']['refresh_token'],
+        ];
     }
 
     public function test_can_register() {
@@ -67,7 +65,7 @@ class AuthControllerTest extends TestCase
     }
 
     public function test_can_check() {
-        $this->get('/api/check',['Authorization' => 'Bearer ' . $this->token['data']['access_token']]);
+        $this->get('/api/check',['Authorization' => 'Bearer ' . $this->data_for_access['access_token']]);
         $this->seeStatusCode(200);
         $this->seeJsonStructure(['success',
             'data'=>[
@@ -83,7 +81,7 @@ class AuthControllerTest extends TestCase
     }
 
     public function test_can_refresh_token() {
-        $this->post('/api/login', $this->data_for_refresh);
+        $this->post('/api/refresh', $this->data_for_refresh);
         $this->seeStatusCode(200);
         $this->seeJsonStructure(['success',
             'data'=>[
@@ -95,19 +93,19 @@ class AuthControllerTest extends TestCase
     }
 
     public function test_can_send_verify_message() {
-        $this->get('api/email/resend', ['Authorization' => 'Bearer ' . $this->token['data']['access_token']]);
+        $this->get('api/email/resend', ['Authorization' => 'Bearer ' . $this->data_for_access['access_token']]);
         $this->seeStatusCode(200);
         $this->seeJsonStructure(['success','message']);
     }
 
     public function test_can_send_reset_message() {
-        $this->post('api/password/email', ['email' => $this->faker->unique()->safeEmail]);
+        $this->post('api/password/email', ['email' => $this->data['username']]);
         $this->seeStatusCode(200);
         $this->seeJsonStructure(['success','message']);
     }
 
     public function test_can_logout() {
-        $this->get('api/logout', ['Authorization' => 'Bearer ' . $this->token['data']['access_token']]);
+        $this->get('api/logout', ['Authorization' => 'Bearer ' . $this->data_for_access['access_token']]);
         $this->seeStatusCode(200);
         $this->seeJsonStructure(['success','message']);
     }

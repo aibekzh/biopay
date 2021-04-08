@@ -174,7 +174,7 @@ class AccessController extends Controller
                 [
                     'refresh_token'=>$req->refresh_token,
                     'client_secret' => env('CLIENT_SECRET'),
-                    'client_id' => env('CLIENT_id'),
+                    'client_id' => env('CLIENT_ID'),
                     'grant_type' => 'refresh_token'
                 ]
             );
