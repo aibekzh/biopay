@@ -30,6 +30,7 @@ $api->version('v1',function ($api){
     });
     $api->post('register','App\Http\Controllers\Auth\AuthController@register');
     $api->post('login','App\Http\Controllers\Auth\AccessController@issueToken');
+    $api->post('refresh','App\Http\Controllers\Auth\AccessController@refreshToken');
     $api->post('password/email',
                [
                 'as'=>'password.email',
