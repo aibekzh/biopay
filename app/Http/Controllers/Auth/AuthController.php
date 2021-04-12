@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Nyholm\Psr7\Response as Psr7Response;
@@ -76,7 +77,11 @@ class AuthController extends AccessTokenController
     public function register(Request $request)
     {
         try{
-            $validator = Validator::make($request->all(),['name' => 'required','email' => 'required|email','password' => 'required|string|confirmed']);
+            $validator = Validator::make($request->all(),[
+                'name' => 'required',
+                'email' => 'required|string|email:rfc,dns|max:255|unique:users',
+                'password' => 'required|string|min:8|regex:/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/|confirmed'
+            ]);
 
             if(!$validator->fails()){
                 $user           = new User;
@@ -153,6 +158,8 @@ class AuthController extends AccessTokenController
                     $this->revokeAccessAndRefreshTokens($token->id);
                 });
 
+            Cache::forget("access_token:".$request->bearerToken());
+            Cache::forget("user_id:".$request->user()->id);
             return response()->json(
                 [
                     'success' => true,

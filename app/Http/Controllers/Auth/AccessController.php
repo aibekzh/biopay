@@ -209,7 +209,8 @@ class AccessController extends Controller
         $req->headers->set('Authorization', 'Bearer ' .$access_token);
         $user = json_decode($check->user($req)->content())->data;
         if(config('app.env') != 'testing'){
-            Cache::put($access_token, ['id'=>$user->id,'email'=>$user->email], Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+            Cache::put("access_token:$access_token", $user->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+            Cache::put("user_id:$user->id", $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
             $cookie = new CookieStorage();
             $cookie->set('access_token', $access_token);
             $cookie->set('refresh_token', $refresh_token);
