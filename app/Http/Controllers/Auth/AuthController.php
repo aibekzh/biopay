@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
+use App\Repository\UsersApiRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Nyholm\Psr7\Response as Psr7Response;
@@ -16,6 +18,7 @@ use Laravel\Passport\Http\Controllers\AccessTokenController;
 
 class AuthController extends AccessTokenController
 {
+
     /**
      * @OA\Post(
      ** path="/api/register",
@@ -89,6 +92,9 @@ class AuthController extends AccessTokenController
                 $user->email    = $request->email;
                 $user->password = Hash::make($request->password);
                 $user->save();
+
+                $apiService = new UsersApiRepository();
+                $apiService->bindBaseRate($user->id);
 
                 return response()->json(
                     [
