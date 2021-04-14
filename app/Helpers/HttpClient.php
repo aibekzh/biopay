@@ -15,7 +15,7 @@ class HttpClient
     {
         $this->client = new Client(
             [
-                "base_uri" => "https://" .$host.':'.$port ?? ''.'/'
+                "base_uri" => "http://" .$host.':'.$port ?? ''.'/'
             ]
         );
     }

@@ -5,7 +5,6 @@ namespace App\Repository;
 
 
 use App\Helpers\HttpClient;
-use Psr\Http\Message\ResponseInterface;
 
 class UsersApiRepository
 {
@@ -13,7 +12,7 @@ class UsersApiRepository
 
     public function __construct()
     {
-        $this->client = new HttpClient(env('MODULE_USERS_HOST'), null);
+        $this->client = new HttpClient(env('MODULE_USERS_HOST'), env('MODULE_USERS_PORT'));
     }
 
     /**
