@@ -227,17 +227,10 @@ class AccessController extends Controller
      * description="Check if token is alive",
      * operationId="refresh",
      * tags={"access"},
-     * @OA\RequestBody(
-     *    required=true,
-     *    description="Pass user credentials",
-     *    @OA\JsonContent(
-     *       required={"token"},
-     *       @OA\Property(property="token", type="string"),
-     *    ),
-     * ),
+     * security={ {"bearer": {} }},
      *   @OA\Response(
      *      response=200,
-     *       description="Success",
+     *       description="Success, returns user's id",
      *   ),
      *   @OA\Response(
      *      response=400,
@@ -246,10 +239,11 @@ class AccessController extends Controller
      * )
      */
     public function check(Request $request) {
-        $user_id        = Cache::get("access_token:".$request['token']);
+        $bearer = $request->bearerToken();
+        $user_id        = Cache::get("access_token:".$bearer);
         $second_token   = Cache::get("user_id:".$user_id);
 
-        if ($request['token'] != $second_token) return response()->json(["success" => false], 401);
+        if (is_null($bearer) || $bearer != $second_token) return response()->json(["success" => false], 401);
 
         return response()->json(["success" => true, "user_id" => $user_id]);
     }
