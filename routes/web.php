@@ -37,7 +37,7 @@ $api->version('v1',function ($api){
                 'uses'=>'App\Http\Controllers\Auth\ForgotPasswordController@forgot',
                ]);
 
-
+    $api->post('access', 'App\Http\Controllers\Auth\AccessController@check');
 
     $api->get('email/verify/{id}',
                 [

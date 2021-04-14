@@ -218,4 +218,39 @@ class AccessController extends Controller
 
         return $result->content();
     }
+
+
+    /**
+     * @OA\Post(
+     * path="/api/access",
+     * summary="Access",
+     * description="Check if token is alive",
+     * operationId="refresh",
+     * tags={"access"},
+     * @OA\RequestBody(
+     *    required=true,
+     *    description="Pass user credentials",
+     *    @OA\JsonContent(
+     *       required={"token"},
+     *       @OA\Property(property="token", type="string"),
+     *    ),
+     * ),
+     *   @OA\Response(
+     *      response=200,
+     *       description="Success",
+     *   ),
+     *   @OA\Response(
+     *      response=400,
+     *      description="Bad Request"
+     *   ),
+     * )
+     */
+    public function check(Request $request) {
+        $user_id        = Cache::get("access_token:".$request['token']);
+        $second_token   = Cache::get("user_id:".$user_id);
+
+        if ($request['token'] != $second_token) return response()->json(["success" => false], 401);
+
+        return response()->json(["success" => true, "user_id" => $user_id]);
+    }
 }
