@@ -42,9 +42,9 @@ class AuthControllerTest extends TestCase
     public function test_can_register() {
         $user = [
             'name'                  => $this->faker->name,
-            'email'                 => $this->faker->unique()->safeEmail,
-            'password'              => 'secret_secret',
-            'password_confirmation' => 'secret_secret',
+            'email'                 => "email@gmail.com",
+            'password'              => 'Pass12345',
+            'password_confirmation' => 'Pass12345',
         ];
 
         $this->post('/api/register', $user);
