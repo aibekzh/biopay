@@ -93,8 +93,10 @@ class AuthController extends AccessTokenController
                 $user->password = Hash::make($request->password);
                 $user->save();
 
-                $apiService = new UsersApiRepository();
-                $apiService->bindBaseRate($user->id);
+                if(config('app.env') != 'testing') {
+                    $apiService = new UsersApiRepository();
+                    $apiService->bindBaseRate($user->id);
+                }
 
                 return response()->json(
                     [
