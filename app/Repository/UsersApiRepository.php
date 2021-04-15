@@ -16,10 +16,9 @@ class UsersApiRepository
     }
 
     /**
-     * @param $user_id
      * @return mixed
      */
-    public function bindBaseRate($user_id)
+    public function bindBaseRate()
     {
         return json_decode($this->client->post("api/v1/user/rate", [
             "rate_id" => 1

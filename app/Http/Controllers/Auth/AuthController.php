@@ -95,7 +95,7 @@ class AuthController extends AccessTokenController
 
                 if(config('app.env') != 'testing') {
                     $apiService = new UsersApiRepository();
-                    $apiService->bindBaseRate($user->id);
+                    $apiService->bindBaseRate();
                 }
 
                 return response()->json(
