@@ -21,7 +21,7 @@ class UsersApiRepository
      */
     public function bindBaseRate($user_id)
     {
-        return json_decode($this->client->post("api/v1/users/$user_id/rate", [
+        return json_decode($this->client->post("api/v1/user/rate", [
             "rate_id" => 1
         ])->getBody()->getContents());
     }
