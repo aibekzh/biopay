@@ -166,8 +166,8 @@ class AuthController extends AccessTokenController
                     $this->revokeAccessAndRefreshTokens($token->id);
                 });
 
-            Cache::forget("access_token:".$request->bearerToken());
-            Cache::forget("user_id:".$request->user()->id);
+            Cache::forget("access_token/".$request->bearerToken());
+            Cache::forget("user_id/".$request->user()->id);
             return response()->json(
                 [
                     'success' => true,
