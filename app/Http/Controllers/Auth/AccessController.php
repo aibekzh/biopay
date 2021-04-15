@@ -209,8 +209,8 @@ class AccessController extends Controller
         $req->headers->set('Authorization', 'Bearer ' .$access_token);
         $user = json_decode($check->user($req)->content())->data;
         if(config('app.env') != 'testing'){
-            Cache::put("access_token:$access_token", $user->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
-            Cache::put("user_id:$user->id", $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+            Cache::put("access_token/$access_token", $user->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+            Cache::put("user_id/$user->id", $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
             $cookie = new CookieStorage();
             $cookie->set('access_token', $access_token);
             $cookie->set('refresh_token', $refresh_token);
@@ -240,10 +240,12 @@ class AccessController extends Controller
      */
     public function check(Request $request) {
         $bearer = $request->bearerToken();
-        $user_id        = Cache::get("access_token:".$bearer);
-        $second_token   = Cache::get("user_id:".$user_id);
+        $user_id        = Cache::get("access_token/".$bearer);
+        $second_token   = Cache::get("user_id/".$user_id);
 
-        if (is_null($bearer) || $bearer != $second_token) return response()->json(["success" => false], 401);
+        if (is_null($bearer) || $bearer != $second_token) return response()->json(
+            ["success" => false, "message" => "Token is expired or invalid"], 401
+        );
 
         return response()->json(["success" => true, "user_id" => $user_id]);
     }
