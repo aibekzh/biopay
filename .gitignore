@@ -5,6 +5,5 @@ Homestead.yaml
 .env
 .phpunit.result.cache
 phpunit-report.xml
-storage/api-docs
 storage/oauth-private.key
 storage/oauth-public.key
