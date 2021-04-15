@@ -37,8 +37,6 @@ $api->version('v1',function ($api){
                 'uses'=>'App\Http\Controllers\Auth\ForgotPasswordController@forgot',
                ]);
 
-    $api->post('access', 'App\Http\Controllers\Auth\AccessController@check');
-
     $api->get('email/verify/{id}',
                 [
                     'as'   => 'verification.verify',
@@ -46,7 +44,7 @@ $api->version('v1',function ($api){
                 ]);
 
     $api->group(['namespace'=>'App\Http\Controllers','middleware'=>['auth:api']],function ($api){
-
+        $api->post('access', 'Auth\AccessController@check');
         $api->get('email/resend','Auth\VerificationController@resend');
         $api->get('check','Auth\AuthController@user');
         $api->get('logout','Auth\AuthController@logout');

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
 use Lcobucci\JWT\Parser as JwtParser;
@@ -170,6 +171,26 @@ class AccessController extends Controller
     public function refreshToken(ServerRequestInterface $request,Request $req)
     {
         try {
+            if(!$req->has('refresh_token')){
+                if ($req->cookie('refresh_token') != null) {
+                    $req->merge([
+                        'refresh_token'=>$req->cookie('refresh_token')
+                    ]);
+                }
+            }
+
+            $validator = Validator::make($req->all(),[
+                'refresh_token' => 'required'
+            ]);
+
+            if($validator->fails()){
+                return response()->json(
+                    [
+                        'success' => false,
+                        'message' => 'unauthorized'], 401
+                );
+            }
+
             $request = $request->withParsedBody(
                 [
                     'refresh_token'=>$req->refresh_token,
@@ -185,7 +206,6 @@ class AccessController extends Controller
                 ]
             );
         } catch (\Exception $e) {
-
             return response()->json(
                 [
                     'success' => false,
