@@ -98,6 +98,6 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', 'module_auth/'),
+    'prefix' => env('CACHE_PREFIX', 'module_auth'),
 
 ];
