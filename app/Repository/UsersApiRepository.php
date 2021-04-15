@@ -18,10 +18,10 @@ class UsersApiRepository
     /**
      * @return mixed
      */
-    public function bindBaseRate()
+    public function bindBaseRate($user_id)
     {
-        return json_decode($this->client->post("api/v1/user/rate", [
-            "rate_id" => 1
+        return json_decode($this->client->post("api/v1/user/rate/reset", [
+            "user_id" => $user_id
         ])->getBody()->getContents());
     }
 }
