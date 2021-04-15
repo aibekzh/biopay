@@ -79,7 +79,6 @@ class AuthController extends AccessTokenController
      */
     public function register(Request $request)
     {
-        try{
             $validator = Validator::make($request->all(),[
                 'name' => 'required',
                 'email' => 'required|string|email:rfc,dns|max:255|unique:users',
@@ -93,9 +92,20 @@ class AuthController extends AccessTokenController
                 $user->password = Hash::make($request->password);
                 $user->save();
 
-                if(config('app.env') != 'testing') {
-                    $apiService = new UsersApiRepository();
-                    $apiService->bindBaseRate();
+                try{
+
+                    if(config('app.env') != 'testing') {
+                        $apiService = new UsersApiRepository();
+                        $apiService->bindBaseRate($user->id);
+                    }
+                }catch (\Exception $exception){
+                    $user->delete();
+                    return response()->json(
+                        [
+                            'success' => false,
+                            'message' => $exception->getMessage()
+                        ], 500
+                    );
                 }
 
                 return response()->json(
@@ -112,16 +122,6 @@ class AuthController extends AccessTokenController
                     'message' => $validator->errors()
                 ], 400
             );
-
-        }catch (\Exception $exception){
-
-            return response()->json(
-                [
-                    'success' => false,
-                    'message' => $exception->getMessage()
-                ], 500
-            );
-        }
     }
 
     /**
