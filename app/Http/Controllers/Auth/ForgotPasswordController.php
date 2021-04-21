@@ -66,14 +66,21 @@ class ForgotPasswordController extends Controller
                     $this->credentials($request)
                 );
 
-                return $response == Password::RESET_LINK_SENT
-                    ? $this->sendResetLinkResponse($request, $response)
-                    : $this->sendResetLinkFailedResponse($request, $response);
+                return response()->json(
+                    [
+                        "success" => true,
+                        "data"    => $response == Password::RESET_LINK_SENT
+                            ? $this->sendResetLinkResponse($request, $response)
+                            : $this->sendResetLinkFailedResponse($request, $response),
+                        "message" => ""
+                    ]
+                );
             }
 
             return response()->json(
                 [
                     "success" => false,
+                    "data"    => "",
                     'message' => $validator->errors()
                 ],400
             );
@@ -83,6 +90,7 @@ class ForgotPasswordController extends Controller
             return response()->json(
                 [
                     'success' => false,
+                    'data'    => "",
                     'message' => $exception->getMessage(),
                 ],500
             );
@@ -179,6 +187,7 @@ class ForgotPasswordController extends Controller
                     return response()->json(
                         [
                             "success" => false,
+                            "data"    => "",
                             "message" => trans('passwords.token'),
                         ], 412,[],JSON_UNESCAPED_UNICODE
                     );
@@ -187,6 +196,7 @@ class ForgotPasswordController extends Controller
                 return response()->json(
                     [
                         "success" => true,
+                        "data"    => "",
                         "message" => trans('passwords.changed'),
                     ],200,[],JSON_UNESCAPED_UNICODE
                 );
@@ -194,6 +204,7 @@ class ForgotPasswordController extends Controller
 
             return response()->json([
                                         "success" => false,
+                                        "data"    => "",
                                         "message" => $validator->errors(),
                                     ],400
             );
@@ -202,6 +213,7 @@ class ForgotPasswordController extends Controller
             return response()->json(
                 [
                     'success' => false,
+                    'data'    => "",
                     'message' => $exception->getMessage(),
                 ],500
             );
@@ -231,6 +243,7 @@ class ForgotPasswordController extends Controller
         return response()->json(
             [
                 'success' => true,
+                'data'    => "",
                 'message' => trans($response),
             ],200,[],JSON_UNESCAPED_UNICODE
         );
@@ -248,6 +261,7 @@ class ForgotPasswordController extends Controller
         return response()->json(
             [
                 "success" => false,
+                "data"    => "",
                 "message" => trans($response)
             ],412,[],JSON_UNESCAPED_UNICODE
         );

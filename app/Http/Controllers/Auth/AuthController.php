@@ -4,16 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
 use App\Repository\UsersApiRepository;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Nyholm\Psr7\Response as Psr7Response;
-use Psr\Http\Message\ServerRequestInterface;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
 
 class AuthController extends AccessTokenController
@@ -103,6 +97,7 @@ class AuthController extends AccessTokenController
                     return response()->json(
                         [
                             'success' => false,
+                            'data'    => "",
                             'message' => $exception->getMessage()
                         ], 500
                     );
@@ -111,6 +106,7 @@ class AuthController extends AccessTokenController
                 return response()->json(
                     [
                         'success' => true,
+                        'data'    => "",
                         'message' => 'Пользователь успешно зарегистрирован'
                     ], 201,[],JSON_UNESCAPED_UNICODE
                 );
@@ -119,6 +115,7 @@ class AuthController extends AccessTokenController
             return response()->json(
                 [
                     'success' => false,
+                    'data'    => "",
                     'message' => $validator->errors()
                 ], 400
             );
@@ -171,6 +168,7 @@ class AuthController extends AccessTokenController
             return response()->json(
                 [
                     'success' => true,
+                    'data'    => "",
                     'message' => 'Успешный выход из системы',
                 ],200,[],JSON_UNESCAPED_UNICODE
             );
@@ -179,6 +177,7 @@ class AuthController extends AccessTokenController
             return response()->json(
                 [
                     'success' => false,
+                    'data'    => "",
                     'message' => $exception->getMessage(),
                 ],500
             );
@@ -226,6 +225,7 @@ class AuthController extends AccessTokenController
                 [
                     'success' => true,
                     'data'    => $request->user(),
+                    'message' => "",
                 ]
             );
         }catch (\Exception $exception){
@@ -233,6 +233,7 @@ class AuthController extends AccessTokenController
             return response()->json(
                 [
                     'success' => false,
+                    'data'    => false,
                     'message' => $exception->getMessage(),
                 ],500
             );
