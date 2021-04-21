@@ -2,21 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Auth\AuthController;
-use App\Models\User;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
 use Lcobucci\JWT\Parser as JwtParser;
 use League\OAuth2\Server\AuthorizationServer;
-use League\OAuth2\Server\ResponseTypes\BearerTokenResponse;
-use mysql_xdevapi\Exception;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
 use App\Helpers\CookieStorage;
@@ -187,7 +181,9 @@ class AccessController extends Controller
                 return response()->json(
                     [
                         'success' => false,
-                        'message' => 'unauthorized'], 401
+                        'data'    => "",
+                        'message' => 'Unauthorized.'
+                    ], 401
                 );
             }
 
@@ -203,13 +199,16 @@ class AccessController extends Controller
                 [
                     'success' => true,
                     'data'    => json_decode($this->authorization($request,$req)),
+                    "message" => ""
                 ]
             );
         } catch (\Exception $e) {
             return response()->json(
                 [
-                    'success' => false,
-                    'message' => $e->getMessage()], 401
+                    'success'   => false,
+                    'data'      => "",
+                    'message'   => $e->getMessage()
+                ], 401
             );
         }
     }
@@ -264,9 +263,19 @@ class AccessController extends Controller
         $second_token   = Cache::get("user_id/".$user_id);
 
         if (is_null($bearer) || $bearer != $second_token) return response()->json(
-            ["success" => false, "message" => "Token is expired or invalid"], 401
+            [
+                "success"   => false,
+                "data"      => "",
+                "message"   => "Token is expired or invalid"
+            ], 401
         );
 
-        return response()->json(["success" => true, "user_id" => $user_id]);
+        return response()->json(
+            [
+                "success"   => true,
+                "data"      => ["user_id" => $user_id],
+                "message"   => ""
+            ]
+        );
     }
 }

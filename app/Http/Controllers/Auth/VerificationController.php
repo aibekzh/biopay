@@ -91,6 +91,7 @@ class VerificationController extends Controller
                 return response()->json(
                     [
                         "success" => false,
+                        "data"    => "",
                         "message" => trans('verify.invalid')
                     ], 410,[],JSON_UNESCAPED_UNICODE
                 );
@@ -104,6 +105,7 @@ class VerificationController extends Controller
             return response()->json(
                 [
                     "success" => true,
+                    "data"    => "",
                     "message" => trans('verify.success')
                 ], 202,[],JSON_UNESCAPED_UNICODE
             );
@@ -112,6 +114,7 @@ class VerificationController extends Controller
             return response()->json(
                 [
                     'success' => false,
+                    'data'    => "",
                     'message' => $exception->getMessage(),
                 ],500
             );
@@ -159,6 +162,7 @@ class VerificationController extends Controller
                 return response()->json(
                     [
                         "success" => false,
+                        "data"    => "",
                         "message" => trans('verify.verified'),
                     ], 409,[],JSON_UNESCAPED_UNICODE);
             }
@@ -167,6 +171,7 @@ class VerificationController extends Controller
             return response()->json(
                 [
                     "success" => true,
+                    "data"    => "",
                     "message" => trans('verify.sent'),
                 ],200,[],JSON_UNESCAPED_UNICODE
             );
@@ -175,6 +180,7 @@ class VerificationController extends Controller
             return response()->json(
                 [
                     'success' => false,
+                    'data'    => "",
                     'message' => $exception->getMessage(),
                 ],500
             );
