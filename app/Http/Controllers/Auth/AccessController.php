@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Exceptions\OAuthExceptionHandler;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Passport\Exceptions\OAuthServerException;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
 use Laravel\Passport\TokenRepository;
 use Lcobucci\JWT\Parser as JwtParser;
@@ -115,14 +117,29 @@ class AccessController extends Controller
                 [
                     'success' => true,
                     'data'    => json_decode($this->authorization($request,$req)),
+                    'message' => "",
                 ]
             );
         } catch (\Exception $e) {
 
+            if ($e instanceof OAuthServerException) {
+                $message = OAuthExceptionHandler::handle($e);
+
+                return response()->json(
+                    [
+                        'success' => false,
+                        'data'    => "",
+                        'message' => $message['message']
+                    ], $message['code']
+                );
+            }
+
             return response()->json(
                 [
                     'success' => false,
-                    'message' => $e->getMessage()], 401
+                    'data'    => "",
+                    'message' => $e->getMessage()
+                ], 401
             );
         }
     }
