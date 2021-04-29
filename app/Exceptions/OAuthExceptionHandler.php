@@ -5,6 +5,7 @@ namespace App\Exceptions;
 
 
 
+use App\Helpers\CookieStorage;
 use Laravel\Passport\Exceptions\OAuthServerException;
 
 class OAuthExceptionHandler
@@ -57,6 +58,12 @@ class OAuthExceptionHandler
             return self::getMessage(6);
         }
 
-        return self::getMessage($exception->getMessage());
+        if ($exception->getCode() == 8) {
+            $cookie = new CookieStorage();
+            $cookie->delete('access_token');
+            $cookie->delete('refresh_token');
+        }
+
+        return self::getMessage($exception->getCode());
     }
 }
