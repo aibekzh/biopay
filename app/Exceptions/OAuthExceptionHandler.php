@@ -53,7 +53,7 @@ class OAuthExceptionHandler
         return $mappings[$code];
     }
 
-    static function handle(OAuthServerException $exception, $data = null) {
+    static function handle(OAuthServerException $exception) {
         if ($exception->getCode() == 6 || $exception->getCode() == 10) {
             return self::getMessage(6);
         }
