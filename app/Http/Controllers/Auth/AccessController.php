@@ -199,7 +199,7 @@ class AccessController extends Controller
                     [
                         'success' => false,
                         'data'    => "",
-                        'message' => 'Unauthorized.'
+                        'message' => 'Refresh token не был задан.'
                     ], 401
                 );
             }
@@ -220,6 +220,18 @@ class AccessController extends Controller
                 ]
             );
         } catch (\Exception $e) {
+            if ($e instanceof OAuthServerException) {
+                $message = OAuthExceptionHandler::handle($e);
+
+                return response()->json(
+                    [
+                        'success' => false,
+                        'data'    => "",
+                        'message' => $message['message']
+                    ], $message['code']
+                );
+            }
+
             return response()->json(
                 [
                     'success'   => false,
@@ -283,7 +295,7 @@ class AccessController extends Controller
             [
                 "success"   => false,
                 "data"      => "",
-                "message"   => "Token is expired or invalid"
+                "message"   => "Токен просрочен или не правильный."
             ], 401
         );
 
