@@ -269,7 +269,7 @@ class AccessController extends Controller
 
 
     /**
-     * @OA\Post(
+     * @OA\Get (
      * path="/api/access",
      * summary="Access",
      * description="Check if token is alive",
