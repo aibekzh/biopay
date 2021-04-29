@@ -57,6 +57,6 @@ class OAuthExceptionHandler
             return self::getMessage(6);
         }
 
-        return self::getMessage($exception->getMessage());
+        return self::getMessage($exception->getCode());
     }
 }
