@@ -18,4 +18,10 @@ class AppServiceProvider extends ServiceProvider
             return new ExternalApiHelper('Hello, app!');
         });
     }
+
+    public function boot()
+    {
+            $this->app['request']->server->set('HTTPS', true);
+            \URL::forceScheme('https');
+    }
 }
