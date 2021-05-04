@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Exceptions\OAuthExceptionHandler;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Passport\Exceptions\OAuthServerException;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
@@ -98,7 +101,7 @@ class AccessController extends Controller
     /**
      * @param ServerRequestInterface $request
      * @param Request $req
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function issueToken(ServerRequestInterface $request,Request $req)
     {
@@ -177,7 +180,7 @@ class AccessController extends Controller
     /**
      * @param ServerRequestInterface $request
      * @param Request $req
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function refreshToken(ServerRequestInterface $request,Request $req)
     {
@@ -305,6 +308,41 @@ class AccessController extends Controller
                 "data"      => ["user_id" => $user_id],
                 "message"   => ""
             ]
+        );
+    }
+
+    /**
+     * @OA\Post(
+     * path="/api/access/cookie",
+     * summary="Access",
+     * description="Check token is alive from cookie",
+     * operationId="check.cookie",
+     * tags={"access"},
+     * security={ {"bearer": {} }},
+     *   @OA\Response(
+     *      response=200,
+     *       description="Success, returns user's id",
+     *   ),
+     *   @OA\Response(
+     *      response=400,
+     *      description="Bad Request"
+     *   ),
+     * )
+     */
+    public function getCookie(Request $request): JsonResponse
+    {
+        $diff = Carbon::parse(DB::table('oauth_access_tokens')->where('user_id', auth()->user()->id)->latest()->first()->expires_at)->diffInSeconds(Carbon::now());
+        $cookie = new CookieStorage();
+        return response()->json(
+            [
+                "success"   => true,
+                "data"      => [
+                    "expire_in" => $diff,
+                    "access_token" => $cookie->get('access_token'),
+                    "refresh_token" => $cookie->get('refresh_token'),
+                ],
+                "message"   => ""
+            ], 401
         );
     }
 }
