@@ -342,7 +342,7 @@ class AccessController extends Controller
                     "refresh_token" => $cookie->get('refresh_token'),
                 ],
                 "message"   => ""
-            ], 401
+            ], 200
         );
     }
 }
