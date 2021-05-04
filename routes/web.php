@@ -45,7 +45,7 @@ $api->version('v1',function ($api){
 
     $api->group(['namespace'=>'App\Http\Controllers','middleware'=>['auth:api']],function ($api){
         $api->post('access', 'Auth\AccessController@check');
-        $api->post('api/access/cookie', 'Auth\AccessController@getCookie');
+        $api->post('access/cookie', 'Auth\AccessController@getCookie');
         $api->get('email/resend','Auth\VerificationController@resend');
         $api->get('check','Auth\AuthController@user');
         $api->get('logout','Auth\AuthController@logout');
