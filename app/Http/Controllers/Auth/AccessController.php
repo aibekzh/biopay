@@ -312,7 +312,7 @@ class AccessController extends Controller
     }
 
     /**
-     * @OA\Post(
+     * @OA\Get(
      * path="/api/access/cookie",
      * summary="Access",
      * description="Check token is alive from cookie",
