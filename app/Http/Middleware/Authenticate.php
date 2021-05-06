@@ -78,7 +78,7 @@ class Authenticate
     {
         $bearer = $request->bearerToken();
 
-        if (isNull($bearer)) {
+        if (is_null($bearer)) {
 
             if ($request->cookie('access_token') != null) {
                 $request->headers->set('Authorization', 'Bearer ' . $request->cookie('access_token'));
