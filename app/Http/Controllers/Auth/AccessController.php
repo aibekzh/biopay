@@ -263,6 +263,7 @@ class AccessController extends Controller
             Cache::put("access_token/$access_token", $user->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
             Cache::put("user_id/$user->id", $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
             $cookie = new CookieStorage();
+            $cookie->set('token_create_time', Carbon::now()->addSeconds(900)->toDateTimeString());
             $cookie->set('access_token', $access_token);
             $cookie->set('refresh_token', $refresh_token);
         }
@@ -320,8 +321,9 @@ class AccessController extends Controller
      */
     public function getCookie(Request $request): JsonResponse
     {
-        $diff = Carbon::parse(DB::table('oauth_access_tokens')->where('user_id', auth()->user()->id)->latest()->first()->expires_at)->diffInSeconds(Carbon::now());
         $cookie = new CookieStorage();
+        $diff = Carbon::parse($cookie->get('token_create_time'))->diffInSeconds(Carbon::now());
+
         return response()->json(
             [
                 "success"   => true,
