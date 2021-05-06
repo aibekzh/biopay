@@ -7,6 +7,7 @@ use App\Models\User;
 use Faker\Factory;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Lumen\Testing\DatabaseTransactions;
+use Laravel\Lumen\Testing\WithoutMiddleware;
 use TestCase;
 
 
@@ -64,22 +65,6 @@ class AuthControllerTest extends TestCase
             ]]);
     }
 
-    public function test_can_check() {
-        $this->get('/api/check',['Authorization' => 'Bearer ' . $this->data_for_access['access_token']]);
-        $this->seeStatusCode(200);
-        $this->seeJsonStructure(['success',
-            'data'=>[
-                'id',
-                'name',
-                'email',
-                'email_verified_at',
-                'balance',
-                'remember_token',
-                'created_at',
-                'updated_at',
-            ]]);
-    }
-
     public function test_can_refresh_token() {
         $this->post('/api/refresh', $this->data_for_refresh);
         $this->seeStatusCode(200);
@@ -93,18 +78,21 @@ class AuthControllerTest extends TestCase
     }
 
     public function test_can_send_verify_message() {
+        $this->withoutMiddleware();
         $this->get('api/email/resend', ['Authorization' => 'Bearer ' . $this->data_for_access['access_token']]);
         $this->seeStatusCode(200);
         $this->seeJsonStructure(['success','message']);
     }
 
     public function test_can_send_reset_message() {
+        $this->withoutMiddleware();
         $this->post('api/password/email', ['email' => $this->data['username']]);
         $this->seeStatusCode(200);
         $this->seeJsonStructure(['success','message']);
     }
 
     public function test_can_logout() {
+        $this->withoutMiddleware();
         $this->get('api/logout', ['Authorization' => 'Bearer ' . $this->data_for_access['access_token']]);
         $this->seeStatusCode(200);
         $this->seeJsonStructure(['success','message']);
