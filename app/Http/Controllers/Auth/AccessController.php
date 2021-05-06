@@ -290,22 +290,11 @@ class AccessController extends Controller
      * )
      */
     public function check(Request $request) {
-        $bearer = $request->bearerToken();
-        $user_id        = Cache::get("access_token/".$bearer);
-        $second_token   = Cache::get("user_id/".$user_id);
-
-        if (is_null($bearer) || $bearer != $second_token) return response()->json(
-            [
-                "success"   => false,
-                "data"      => "",
-                "message"   => "Токен просрочен или не правильный."
-            ], 401
-        );
 
         return response()->json(
             [
                 "success"   => true,
-                "data"      => ["user_id" => $user_id],
+                "data"      => ["user_id" => $request->user_id],
                 "message"   => ""
             ]
         );
