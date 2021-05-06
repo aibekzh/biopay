@@ -5,6 +5,8 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as Auth;
 use App\Helpers\CookieStorage;
+use Illuminate\Support\Facades\Cache;
+use function PHPUnit\Framework\isNull;
 
 
 class Authenticate
@@ -37,20 +39,10 @@ class Authenticate
      *
      * @return mixed
      */
-    public function handle($request, Closure $next, $guard = null)
+    public function handle($request, Closure $next)
     {
         try {
-            if (!$this->auth->guard($guard)
-                            ->check()) {
-
-                if ($request->cookie('access_token') != null) {
-                    $request->headers->set('Authorization', 'Bearer ' . $request->cookie('access_token'));
-
-                }
-            }
-
-            if (!$this->auth->guard($guard)
-                            ->check()) {
+            if (!$this->checkAuth($request)) {
                 $this->cookieDelete("access_token");
 
                 return response()->json(
@@ -80,5 +72,27 @@ class Authenticate
     {
         $cookie = new CookieStorage();
         $cookie->delete($key);
+    }
+
+    static function checkAuth($request): bool
+    {
+        $bearer = $request->bearerToken();
+
+        if (isNull($bearer)) {
+
+            if ($request->cookie('access_token') != null) {
+                $request->headers->set('Authorization', 'Bearer ' . $request->cookie('access_token'));
+                $bearer = $request->bearerToken();
+            }else{
+                return false;
+            }
+        }
+
+        $user_id        = Cache::get("access_token/".$bearer);
+        $second_token   = Cache::get("user_id/".$user_id);
+        if (is_null($bearer) || $bearer != $second_token) return false;
+
+        $request->merge(["user_id" => $user_id]);
+        return true;
     }
 }
