@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Lang;
+use Dotenv\Exception\ValidationException;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use mysql_xdevapi\Exception;
 
 class ForgotPasswordController extends Controller
 {
@@ -236,17 +235,16 @@ class ForgotPasswordController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  string  $response
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @return array
      */
     protected function sendResetLinkResponse(Request $request, $response)
     {
-        return response()->json(
+        return
             [
                 'success' => true,
                 'data'    => "",
                 'message' => trans($response),
-            ],200,[],JSON_UNESCAPED_UNICODE
-        );
+            ];
     }
 
     /**
@@ -254,17 +252,11 @@ class ForgotPasswordController extends Controller
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  string  $response
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @return array
      */
     protected function sendResetLinkFailedResponse(Request $request, $response)
     {
-        return response()->json(
-            [
-                "success" => false,
-                "data"    => "",
-                "message" => trans($response)
-            ],412,[],JSON_UNESCAPED_UNICODE
-        );
+        throw new ValidationException(trans($response));
     }
 
     /**

@@ -80,15 +80,17 @@ class VerifyEmail extends Notification
             return call_user_func(static::$createUrlCallback, $notifiable);
         }
 
-        return app('api.url')->version('v1')->temporarySignedRoute(
+        $url = app('api.url')->version('v1')->temporarySignedRoute(
             'verification.verify',
             Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
             [
                 'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
-                'access_token' =>request()->bearerToken(),
+                'refresh_token' =>request()->cookies->get('refresh_token'),
             ]
         );
+
+        return str_replace(\request()->getHost().":".\request()->getPort()."/api/email/verify", env('FRONT_DOMAIN').'/auth/validate', $url);
     }
 
     /**

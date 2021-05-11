@@ -2,13 +2,32 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\AuthHelper;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Laravel\Passport\TokenRepository;
+use Lcobucci\JWT\Parser as JwtParser;
+use League\OAuth2\Server\AuthorizationServer;
+use Psr\Http\Message\ServerRequestInterface;
 
 
 class VerificationController extends Controller
 {
+
+    private $server;
+    private $jwt;
+    private $tokens;
+
+    public function __construct(
+        AuthorizationServer $server,
+        TokenRepository $tokens,
+        JwtParser $jwt
+    ) {
+        $this->jwt    = $jwt;
+        $this->server = $server;
+        $this->tokens = $tokens;
+    }
 
     /**
      * @OA\Get (
@@ -83,7 +102,7 @@ class VerificationController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function verify($id, Request $request) {
+    public function verify($id, Request $request, ServerRequestInterface $requestInferface) {
         try{
 
             if (!app('api.url')->version('v1')->hasValidSignature($request)) {
@@ -102,12 +121,13 @@ class VerificationController extends Controller
                 $user->markEmailAsVerified();
             }
 
+            $auth = (new AuthHelper($this->server, $this->tokens, $this->jwt))->refreshToken($requestInferface, $request);
             return response()->json(
                 [
                     "success" => true,
-                    "data"    => "",
+                    "data"    => json_decode($auth['result']),
                     "message" => trans('verify.success')
-                ], 202,[],JSON_UNESCAPED_UNICODE
+                ], $auth['code'],[],JSON_UNESCAPED_UNICODE
             );
         }catch (\Exception $exception){
 
