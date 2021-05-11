@@ -116,12 +116,13 @@ class AccessController extends Controller
                 ]
             );
 
+            $auth = $this->authorization($request,$req);
             return response()->json(
                 [
                     'success' => true,
-                    'data'    => json_decode($this->authorization($request,$req)),
+                    'data'    => json_decode($auth['result']),
                     'message' => "",
-                ]
+                ], $auth['code']
             );
         } catch (\Exception $e) {
 
@@ -215,12 +216,14 @@ class AccessController extends Controller
                     'grant_type' => 'refresh_token'
                 ]
             );
+
+            $auth = $this->authorization($request,$req);
             return response()->json(
                 [
                     'success' => true,
-                    'data'    => json_decode($this->authorization($request,$req)),
+                    'data'    => json_decode($auth['result']),
                     "message" => ""
-                ]
+                ], $auth['code']
             );
         } catch (\Exception $e) {
             if ($e instanceof OAuthServerException) {
@@ -256,19 +259,25 @@ class AccessController extends Controller
         );
         $access_token = json_decode($result->content())->access_token;
         $refresh_token = json_decode($result->content())->refresh_token;
-        $check = new AuthController($this->server,$this->tokens,$this->jwt);
         $req->headers->set('Authorization', 'Bearer ' .$access_token);
-        $user = json_decode($check->user($req)->content())->data;
+
         if(config('app.env') != 'testing'){
-            Cache::put("access_token/$access_token", $user->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
-            Cache::put("user_id/$user->id", $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
             $cookie = new CookieStorage();
             $cookie->set('token_create_time', Carbon::now()->addSeconds(900)->toDateTimeString());
             $cookie->set('access_token', $access_token);
             $cookie->set('refresh_token', $refresh_token);
+            $partial = false;
+            if (\request()->user()->has_verification) {
+                Cache::put("access_token/$access_token", $req->user()->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+                Cache::put("user_id/".$req->user()->id, $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+
+            } else $partial = true;
         }
 
-        return $result->content();
+        return [
+            "result" => $result->content(),
+            "code"   => $partial ? 206 : 200
+            ];
     }
 
 

@@ -20,6 +20,8 @@ class User extends Model implements  AuthenticatableContract, AuthorizableContra
 {
     use HasApiTokens,Authenticatable, Authorizable, HasFactory, Notifiable, CanResetPassword;
 
+    protected $appends = "has_verification";
+
     /**
      * The attributes that are mass assignable.
      *
@@ -103,5 +105,17 @@ class User extends Model implements  AuthenticatableContract, AuthorizableContra
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function getHasVerificationAttribute() {
+        $verification = UserVerification::query()->where('user_id', $this->id);
+        if ($verification->exists()) {
+            $verification = $verification->first();
+            if ($verification->is_user_verified) return true;
+
+            return false;
+        }
+
+        return false;
     }
 }

@@ -88,6 +88,7 @@ $app->configure('swagger-lume');
 
  $app->routeMiddleware([
      'auth' => App\Http\Middleware\Authenticate::class,
+     'auth_partial' => \App\Http\Middleware\AuthPartial::class,
      'cors' => \Fruitcake\Cors\HandleCors::class,
 
  ]);
