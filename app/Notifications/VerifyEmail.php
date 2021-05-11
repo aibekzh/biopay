@@ -90,7 +90,8 @@ class VerifyEmail extends Notification
             ]
         );
 
-        return str_replace(implode ( ':' , array_filter([\request()->getHost(),\request()->getPort()]) )."/api/email/verify", env('FRONT_DOMAIN').'/auth/validate', $url);
+
+        return str_replace(\request()->getHttpHost()."/api/email/verify", env('FRONT_DOMAIN').'/auth/validate', $url);
     }
 
     /**
