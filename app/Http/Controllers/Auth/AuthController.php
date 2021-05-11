@@ -78,15 +78,19 @@ class AuthController extends AccessTokenController
                 'email' => 'required|string|email:rfc,dns|max:255|unique:users',
                 'password' => 'required|string|min:8|regex:/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/|confirmed'
             ], [
-                'required' => 'Поле :attribute должно быть заполнено.',
-                'string' => 'Поле :attribute является строкой.',
-                'email' => 'Поле :attribute должен быть действительным адресом электронной почты.',
-                'max' => 'Поле :attribute не может содержать больше :max символов',
+                'required' => ':attribute должно быть заполнено.',
+                'string' => ':attribute является строкой.',
+                'email' => ':attribute должен быть действительным адресом электронной почты.',
+                'max' => ':attribute не может содержать больше :max символов',
                 'unique' => ':attribute уже занята!',
-                'min' => 'Поле :attribute должен содержать не менее :min символов.',
-                'regex' => 'Пароль должен состоять из восьми или более символов латинского алфавита, содержать заглавные и строчные буквы, цифры',
-                'confirmed' => 'Пороль не совпадает.',
+                'min' => ':attribute должен содержать не менее :min символов.',
+                'regex' => ':attribute должен состоять из восьми или более символов латинского алфавита, содержать заглавные и строчные буквы, цифры',
+                'confirmed' => ':attribute не совпадает.',
 
+            ], [
+                'name' => 'Имя',
+                'email' => 'Почта',
+                'password' => 'Пароль'
             ]);
 
             if(!$validator->fails()){
