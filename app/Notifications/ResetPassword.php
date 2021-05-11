@@ -72,7 +72,7 @@ class ResetPassword extends Notification
             ], false));
         }
 
-        $url = str_replace(\request()->getHost().":".\request()->getPort()."/password/reset", env('FRONT_DOMAIN').'/auth/reset-password', $url);;
+        $url = str_replace(\request()->getHttpHost()."/password/reset", env('FRONT_DOMAIN').'/auth/reset-password', $url);;
 
         return $this->buildMailMessage($url);
     }
