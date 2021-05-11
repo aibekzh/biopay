@@ -257,6 +257,7 @@ class AccessController extends Controller
                 );
             }
         );
+        $partial = false;
         $access_token = json_decode($result->content())->access_token;
         $refresh_token = json_decode($result->content())->refresh_token;
         $req->headers->set('Authorization', 'Bearer ' .$access_token);
@@ -266,7 +267,6 @@ class AccessController extends Controller
             $cookie->set('token_create_time', Carbon::now()->addSeconds(900)->toDateTimeString());
             $cookie->set('access_token', $access_token);
             $cookie->set('refresh_token', $refresh_token);
-            $partial = false;
             if (\request()->user()->has_verification) {
                 Cache::put("access_token/$access_token", $req->user()->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
                 Cache::put("user_id/".$req->user()->id, $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
