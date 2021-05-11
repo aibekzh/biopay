@@ -46,7 +46,7 @@ class VerificationController extends Controller
      *      )
      *   ),
      *   @OA\Parameter(
-     *      name="access_token",
+     *      name="refresh_token",
      *      in="query",
      *      required=false,
      *      @OA\Schema(
@@ -78,22 +78,12 @@ class VerificationController extends Controller
      *      )
      *   ),
      *   @OA\Response(
-     *      response=202,
-     *      description="Success",
-     *      @OA\JsonContent(
-     *          type="object",
-     *          @OA\Property(property="success", type="boolean", example="true"),
-     *          @OA\Property(property="message", type="string", example="Ваша учетная запись успешно подтверждена"),
-     *      )
+     *      response=200,
+     *      description="Full login",
      *   ),
      *   @OA\Response(
-     *      response=410,
-     *      description="verify invalid",
-     *      @OA\JsonContent(
-     *          type="object",
-     *          @OA\Property(property="success", type="boolean", example="true"),
-     *          @OA\Property(property="message", type="string", example="Указан недействительный / просроченный URL"),
-     *      )
+     *      response=206,
+     *      description="Partial login",
      *   ),
      *)
      **/
@@ -153,11 +143,6 @@ class VerificationController extends Controller
      *   @OA\Response(
      *      response=200,
      *      description="Success",
-     *      @OA\JsonContent(
-     *          type="object",
-     *          @OA\Property(property="success", type="boolean", example="true"),
-     *          @OA\Property(property="message", type="string", example="Мы отправили письмо на Ваш почтовый ящик с инструкцией по подтверждению почты!"),
-     *      )
      *   ),
      *   @OA\Response(
      *      response=401,
