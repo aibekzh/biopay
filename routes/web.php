@@ -47,6 +47,7 @@ $api->version('v1',function ($api){
         $api->get('access/cookie', 'Auth\AccessController@getCookie');
         $api->get('access', 'Auth\AccessController@check');
         $api->get('check','Auth\AuthController@user');
+        $api->post('password/change', 'Auth\ForgotPasswordController@change');
     });
 
     $api->group(['namespace'=>'App\Http\Controllers','middleware'=>['auth_partial']],function ($api){
