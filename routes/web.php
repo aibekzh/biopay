@@ -19,6 +19,14 @@ $router->post('api/password/reset',
                'uses'=>'Auth\ForgotPasswordController@reset',
            ]
 );
+
+$router->delete('api/user/self',
+    [
+        'as'=>'user.delete',
+        'uses'=>'TestController@delUser',
+    ]
+);
+
 $router->get('/', function () use ($router) {
     return $router->app->version();
 });
