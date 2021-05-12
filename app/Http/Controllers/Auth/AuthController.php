@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Exceptions\OAuthExceptionHandler;
+use App\Helpers\AuthHelper;
 use App\Models\User;
 use App\Repository\UsersApiRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Passport\Exceptions\OAuthServerException;
 use Laravel\Passport\Http\Controllers\AccessTokenController;
+use Psr\Http\Message\ServerRequestInterface;
 
 class AuthController extends AccessTokenController
 {
@@ -71,7 +75,7 @@ class AuthController extends AccessTokenController
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request)
+    public function register(Request $request, ServerRequestInterface $req)
     {
             $validator = Validator::make($request->all(),[
                 'name' => 'required',
@@ -99,15 +103,33 @@ class AuthController extends AccessTokenController
                 $user->email    = $request->email;
                 $user->password = Hash::make($request->password);
                 $user->save();
-
                 try{
 
                     if(config('app.env') != 'testing') {
                         $apiService = new UsersApiRepository();
                         $apiService->bindBaseRate($user->id);
                     }
+
+                    $user->sendEmailVerificationNotification();
+                    $request->merge([
+                        "username" => $user->email,
+                    ]);
+                    $auth = (new AuthHelper($this->server, $this->tokens, $this->jwt))->issueToken($req, $request);
                 }catch (\Exception $exception){
                     $user->delete();
+
+                    if ($exception instanceof OAuthServerException) {
+                        $message = OAuthExceptionHandler::handle($exception);
+
+                        return response()->json(
+                            [
+                                'success' => false,
+                                'data'    => "",
+                                'message' => $message['message']
+                            ], $message['code']
+                        );
+                    }
+
                     return response()->json(
                         [
                             'success' => false,
@@ -120,7 +142,7 @@ class AuthController extends AccessTokenController
                 return response()->json(
                     [
                         'success' => true,
-                        'data'    => "",
+                        'data'    => json_decode($auth['result']),
                         'message' => 'Пользователь успешно зарегистрирован'
                     ], 201,[],JSON_UNESCAPED_UNICODE
                 );
