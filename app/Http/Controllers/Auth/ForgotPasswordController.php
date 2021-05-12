@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Rules\DontMatchOldPassword;
+use App\Rules\MatchCurrentPassword;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Http\Request;
@@ -217,6 +220,98 @@ class ForgotPasswordController extends Controller
                 ],500
             );
         }
+    }
+
+    /**
+     * @OA\Post (
+     *   path="/password/change",
+     *   operationId="password/change",
+     *   tags={"auth"},
+     *   summary="Change the password",
+     *   description="Change the password",
+     *   security={ {"bearer": {} }},
+     *
+     *   @OA\Parameter(
+     *      name="password",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="new_password",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="new_password_confirmation",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *
+     *   @OA\Response(
+     *      response=200,
+     *      description="Success",
+     *   ),
+     *   @OA\Response(
+     *      response=412,
+     *      description="Precondition Failed",
+     *   ),
+     *   @OA\Response(
+     *      response=400,
+     *      description="Validation Failed",
+     *   ),
+     *)
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function change(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => ['required', new MatchCurrentPassword],
+            'new_password' => ['required', 'confirmed', new DontMatchOldPassword],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    "success" => false,
+                    "data"    => "",
+                    "message" => $validator->errors()
+                ], 400
+            );
+        }
+
+        try {
+            $user = User::query()->findOrFail(auth()->user()->id);
+            $user->password = Hash::make($request->new_password);
+            $user->saveOrFail();
+
+            return response()->json(
+                [
+                    "success" => true,
+                    "data"    => "",
+                    "message" => "Пароль успешно был изменен"
+                ]
+            );
+        } catch (\Exception $exception) {
+            return response()->json(
+                [
+                    "success" => false,
+                    "data"    => "",
+                    "message" => $exception->getMessage()
+                ], 500
+            );
+        }
+
     }
 
     /**
