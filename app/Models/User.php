@@ -20,7 +20,7 @@ class User extends Model implements  AuthenticatableContract, AuthorizableContra
 {
     use HasApiTokens,Authenticatable, Authorizable, HasFactory, Notifiable, CanResetPassword;
 
-    protected $appends = ['has_verification', 'has_verified_email'];
+    protected $appends = ['has_verification'];
 
     /**
      * The attributes that are mass assignable.
@@ -117,9 +117,5 @@ class User extends Model implements  AuthenticatableContract, AuthorizableContra
         }
 
         return false;
-    }
-
-    public function getHasVerifiedEmailAttribute() {
-        return !is_null($this->email_verified_at);
     }
 }

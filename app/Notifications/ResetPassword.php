@@ -72,7 +72,8 @@ class ResetPassword extends Notification
             ], false));
         }
 
-        $url = str_replace(\request()->getHttpHost()."/password/reset", env('FRONT_DOMAIN').'/auth/reset-password', $url);;
+        $link = str_replace('https', 'http', route('password.reset'));
+        $url = str_replace($link, 'http://'.env('FRONT_DOMAIN').'/auth/reset-password', $url);;
 
         return $this->buildMailMessage($url);
     }

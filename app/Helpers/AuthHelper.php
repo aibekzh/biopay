@@ -97,7 +97,7 @@ class AuthHelper
             $cookie->set('access_token', $access_token);
             $cookie->set('refresh_token', $refresh_token);
 
-            if (\request()->user()->has_verified_email) {
+            if (!is_null(\request()->user()->email_verified_at)) {
                 Cache::put("access_token/$access_token", $req->user()->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
                 Cache::put("user_id/".$req->user()->id, $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
 
