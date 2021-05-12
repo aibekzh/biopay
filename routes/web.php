@@ -13,7 +13,7 @@
 |
 */
 
-$router->post('password/reset',
+$router->post('api/password/reset',
            [
                'as'=>'password.reset',
                'uses'=>'Auth\ForgotPasswordController@reset',
