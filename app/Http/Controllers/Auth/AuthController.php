@@ -99,7 +99,6 @@ class AuthController extends AccessTokenController
                 $user->email    = $request->email;
                 $user->password = Hash::make($request->password);
                 $user->save();
-
                 try{
 
                     if(config('app.env') != 'testing') {
@@ -116,6 +115,8 @@ class AuthController extends AccessTokenController
                         ], 500
                     );
                 }
+
+                $user->sendEmailVerificationNotification();
 
                 return response()->json(
                     [
