@@ -110,11 +110,19 @@ class AuthController extends AccessTokenController
                         $apiService->bindBaseRate($user->id);
                     }
 
-                    $user->sendEmailVerificationNotification();
                     $request->merge([
                         "username" => $user->email,
                     ]);
+
                     $auth = (new AuthHelper($this->server, $this->tokens, $this->jwt))->issueToken($req, $request);
+
+                    $request->merge(
+                        [
+                            'refresh_token' => json_decode($auth['result'])->refresh_token
+                        ]
+                    );
+
+                    $user->sendEmailVerificationNotification();
                 }catch (\Exception $exception){
                     $user->delete();
 

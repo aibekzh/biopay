@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Helpers\AuthHelper;
+use App\Helpers\CookieStorage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -171,6 +172,10 @@ class VerificationController extends Controller
                         "message" => trans('verify.verified'),
                     ], 409,[],JSON_UNESCAPED_UNICODE);
             }
+            \request()->merge([
+                "refresh_token" => (new CookieStorage())->get('refresh_token')
+            ]);
+
             auth()->user()->sendEmailVerificationNotification();
 
             return response()->json(
