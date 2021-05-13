@@ -2,15 +2,14 @@
 
 namespace App\Notifications;
 
-use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
 
 class VerifyEmail extends Notification
 {
+
     /**
      * The callback that should be used to create the verify email URL.
      *
@@ -86,7 +85,7 @@ class VerifyEmail extends Notification
             [
                 'id' => $notifiable->getKey(),
                 'hash' => sha1($notifiable->getEmailForVerification()),
-                'refresh_token' =>request()->cookies->get('refresh_token'),
+                'refresh_token' =>isset(request()->refresh_token) ? request()->refresh_token : null,
             ]
         );
 
