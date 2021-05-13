@@ -2,32 +2,14 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Helpers\AuthHelper;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Laravel\Passport\TokenRepository;
-use Lcobucci\JWT\Parser as JwtParser;
-use League\OAuth2\Server\AuthorizationServer;
 use Psr\Http\Message\ServerRequestInterface;
 
 
 class VerificationController extends Controller
 {
-
-    private $server;
-    private $jwt;
-    private $tokens;
-
-    public function __construct(
-        AuthorizationServer $server,
-        TokenRepository $tokens,
-        JwtParser $jwt
-    ) {
-        $this->jwt    = $jwt;
-        $this->server = $server;
-        $this->tokens = $tokens;
-    }
 
     /**
      * @OA\Get (
@@ -111,13 +93,12 @@ class VerificationController extends Controller
                 $user->markEmailAsVerified();
             }
 
-            $auth = (new AuthHelper($this->server, $this->tokens, $this->jwt))->refreshToken($requestInferface, $request);
             return response()->json(
                 [
                     "success" => true,
-                    "data"    => json_decode($auth['result']),
+                    "data"    => "",
                     "message" => trans('verify.success')
-                ], $auth['code'],[],JSON_UNESCAPED_UNICODE
+                ], 200,[],JSON_UNESCAPED_UNICODE
             );
         }catch (\Exception $exception){
 
