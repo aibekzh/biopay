@@ -49,8 +49,9 @@ class Authenticate
                 return response()->json(
                     [
                         'success' => false,
+                        'data'    => ['conflict' => $check['conflict']],
                         'message' => 'Вы не авторизованы',
-                    ], $check['code']
+                    ], 401
                 );
             }
 
@@ -97,19 +98,19 @@ class Authenticate
 
         if (is_null($bearer)) {
             return [
-                'code'      => 401,
+                'conflict'   => false,
                 'success'    => false
             ];
         } else {
             if ($bearer == $second_token) {
                 $request->merge(["user_id" => $user_id]);
                 return [
-                    'code'      => 200,
+                    'conflict'   => false,
                     'success'    => true
                 ];
             } else {
                 return [
-                    'code'      => 409,
+                    'conflict'   => true,
                     'success'    => false
                 ];
             }
