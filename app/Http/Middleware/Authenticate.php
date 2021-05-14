@@ -43,6 +43,7 @@ class Authenticate
     {
         try {
             $check = $this->checkAuth($request);
+
             if (!$check['success']) {
                 $this->cookieDelete("access_token");
 
@@ -87,34 +88,33 @@ class Authenticate
                 $bearer = $request->bearerToken();
             }else{
                 return [
-                    'code'      => 401,
+                    'conflict'   => false,
                     'success'    => false
                 ];
             }
         }
+
+        if (is_null($bearer))  return [
+                'conflict'   => false,
+                'success'    => false
+            ];
 
         $user_id        = Cache::get("access_token/".$bearer);
         $second_token   = Cache::get("user_id/".$user_id);
 
-        if (is_null($bearer)) {
-            return [
-                'conflict'   => false,
-                'success'    => false
-            ];
-        } else {
-            if ($bearer == $second_token) {
-                $request->merge(["user_id" => $user_id]);
-                return [
-                    'conflict'   => false,
-                    'success'    => true
-                ];
-            } else {
-                return [
-                    'conflict'   => true,
-                    'success'    => false
-                ];
-            }
-        }
+        if (is_null($user_id) || is_null($second_token)) return [
+            'conflict'   => false,
+            'success'    => false
+        ];
+        elseif ($bearer != $second_token) return [
+        'conflict'   => true,
+        'success'    => false
+        ];
+        $request->merge(["user_id" => $user_id]);
 
+        return [
+            'conflict'   => false,
+            'success'    => true
+        ];
     }
 }
