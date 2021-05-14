@@ -42,14 +42,15 @@ class Authenticate
     public function handle($request, Closure $next)
     {
         try {
-            if (!$this->checkAuth($request)) {
+            $check = $this->checkAuth($request);
+            if (!$check['success']) {
                 $this->cookieDelete("access_token");
 
                 return response()->json(
                     [
                         'success' => false,
                         'message' => 'Вы не авторизованы',
-                    ], 401
+                    ], $check['code']
                 );
             }
 
@@ -74,7 +75,7 @@ class Authenticate
         $cookie->delete($key);
     }
 
-    static function checkAuth($request): bool
+    static function checkAuth($request): array
     {
         $bearer = $request->bearerToken();
 
@@ -84,15 +85,35 @@ class Authenticate
                 $request->headers->set('Authorization', 'Bearer ' . $request->cookie('access_token'));
                 $bearer = $request->bearerToken();
             }else{
-                return false;
+                return [
+                    'code'      => 401,
+                    'success'    => false
+                ];
             }
         }
 
         $user_id        = Cache::get("access_token/".$bearer);
         $second_token   = Cache::get("user_id/".$user_id);
-        if (is_null($bearer) || $bearer != $second_token) return false;
 
-        $request->merge(["user_id" => $user_id]);
-        return true;
+        if (is_null($bearer)) {
+            return [
+                'code'      => 401,
+                'success'    => false
+            ];
+        } else {
+            if ($bearer == $second_token) {
+                $request->merge(["user_id" => $user_id]);
+                return [
+                    'code'      => 200,
+                    'success'    => true
+                ];
+            } else {
+                return [
+                    'code'      => 409,
+                    'success'    => false
+                ];
+            }
+        }
+
     }
 }
