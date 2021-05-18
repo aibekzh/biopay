@@ -7,6 +7,7 @@ namespace App\Helpers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\UnauthorizedException;
 use Laravel\Passport\Http\Controllers\HandlesOAuthErrors;
@@ -44,11 +45,11 @@ class AuthHelper
         }
 
         $validator = Validator::make($req->all(),[
-            'refresh_token' => 'required'
+            'refresh_token' => 'required|exists:user_refresh_tokens,refresh_token'
         ]);
 
         if($validator->fails()){
-            throw new UnauthorizedException('Refresh токен не был задан');
+            throw new UnauthorizedException('Refresh токен не был задан или недоступен');
         }
 
         $request = $request->withParsedBody(
@@ -90,6 +91,16 @@ class AuthHelper
         $access_token = json_decode($result->content())->access_token;
         $refresh_token = json_decode($result->content())->refresh_token;
         $req->headers->set('Authorization', 'Bearer ' .$access_token);
+
+        DB::table('user_refresh_tokens')->updateOrInsert(
+            [
+                'user_id' => $req->user()->id
+            ],
+            [
+                'refresh_token' => $refresh_token
+            ]
+        );
+
 
         if(config('app.env') != 'testing'){
             $cookie = new CookieStorage();
