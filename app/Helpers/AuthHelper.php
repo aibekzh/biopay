@@ -92,19 +92,13 @@ class AuthHelper
         $refresh_token = json_decode($result->content())->refresh_token;
         $req->headers->set('Authorization', 'Bearer ' .$access_token);
 
-        $check = DB::table('user_refresh_tokens')->where('user_id', $req->user()->id)->exists();
-
-        if ($check) {
-            DB::table('user_refresh_tokens')->where('user_id', $req->user()->id)->update(
-                [
-                    'refresh_token' => $refresh_token
-                ]
-            );
-        } else DB::table('user_refresh_tokens')->insert(
-          [
-              'user_id' => $req->user()->id,
-              'refresh_token' => $refresh_token
-          ]
+        DB::table('user_refresh_tokens')->updateOrInsert(
+            [
+                'user_id' => $req->user()->id
+            ],
+            [
+                'refresh_token' => $refresh_token
+            ]
         );
 
 
