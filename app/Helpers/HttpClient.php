@@ -15,7 +15,7 @@ class HttpClient
     {
         $this->client = new Client(
             [
-                "base_uri" => "http://" .$host.':'.$port ?? ''.'/'
+                "base_uri" => env('MODULE_USERS_SCHEME').'://'.$host.':'.$port ?? ''.'/'
             ]
         );
     }
