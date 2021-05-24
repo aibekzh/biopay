@@ -278,7 +278,11 @@ class ForgotPasswordController extends Controller
         $validator = Validator::make($request->all(), [
             'password' => ['required', new MatchCurrentPassword],
             'new_password' => ['required', 'confirmed', new DontMatchOldPassword],
-        ]);
+        ],
+        [
+            "new_password.confirmed" => "Пароли не совпадают."
+        ]
+        );
 
         if ($validator->fails()) {
             return response()->json(

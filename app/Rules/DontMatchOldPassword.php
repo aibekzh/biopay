@@ -29,6 +29,6 @@ class DontMatchOldPassword implements ImplicitRule
      */
     public function message(): string
     {
-        return 'Введенный пароль совпадает со старым паролем.';
+        return 'Новый пароль должен отличаться от текущего.';
     }
 }
