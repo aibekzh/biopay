@@ -111,7 +111,7 @@ $app->configure('swagger-lume');
  $app->register(Laravel\Passport\PassportServiceProvider::class);
  $app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
  $app->register(Fruitcake\Cors\CorsServiceProvider::class);
- $app->register(Dingo\Api\Provider\LumenServiceProvider::class);
+// $app->register(Dingo\Api\Provider\LumenServiceProvider::class);
  $app->register(Illuminate\Redis\RedisServiceProvider::class);
  $app->register(Illuminate\Notifications\NotificationServiceProvider::class);
  $app->register(Illuminate\Mail\MailServiceProvider::class);

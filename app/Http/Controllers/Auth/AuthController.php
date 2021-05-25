@@ -79,12 +79,12 @@ class AuthController extends AccessTokenController
     {
             $validator = Validator::make($request->all(),[
                 'name' => 'required',
-                'email' => 'required|string|email:rfc,dns|max:255|unique:users',
+                'phone_number' => 'required|string|email:rfc,dns|max:255|unique:users',
                 'password' => 'required|string|min:8|regex:/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/|confirmed'
             ], [
                 'required' => ':attribute должно быть заполнено.',
                 'string' => ':attribute является строкой.',
-                'email' => ':attribute должен быть действительным адресом электронной почты.',
+                'phone_number' => ':attribute должен быть действительным адресом электронной почты.',
                 'max' => ':attribute не может содержать больше :max символов',
                 'unique' => ':attribute уже занята!',
                 'min' => ':attribute должен содержать не менее :min символов.',
@@ -93,25 +93,27 @@ class AuthController extends AccessTokenController
 
             ], [
                 'name' => 'Имя',
-                'email' => 'Почта',
+                'phone_number' => 'Номер телефона',
                 'password' => 'Пароль'
             ]);
 
             if(!$validator->fails()){
                 $user           = new User;
-                $user->name     = $request->name;
+                $user->phone_number     = $request->phone_number;
                 $user->email    = $request->email;
                 $user->password = Hash::make($request->password);
+                $user->balance = 0;
+                $user->remember_token = 0;
                 $user->save();
                 try{
 
-                    if(config('app.env') != 'testing') {
-                        $apiService = new UsersApiRepository();
-                        $apiService->bindBaseRate($user->id);
-                    }
+//                    if(config('app.env') != 'testing') {
+//                        $apiService = new UsersApiRepository();
+//                        $apiService->bindBaseRate($user->id);
+//                    }
 
                     $request->merge([
-                        "username" => $user->email,
+                        "username" => $user->phone_number
                     ]);
 
                     $auth = (new AuthHelper($this->server, $this->tokens, $this->jwt))->issueToken($req, $request);
@@ -122,7 +124,7 @@ class AuthController extends AccessTokenController
                         ]
                     );
 
-                    $user->sendEmailVerificationNotification();
+//                    $user->sendEmailVerificationNotification();
                 }catch (\Exception $exception){
                     $user->delete();
 
