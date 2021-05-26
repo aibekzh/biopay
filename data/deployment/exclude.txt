@@ -1,0 +1,15 @@
+.git
+.idea
+storage/logs/*
+tests/
+phpunit.xml
+readme.md
+.gitignore
+.editorconfig
+submodule/
+composer.*
+.env.*
+.env
+bootstrap/cache/*
+.gitlab-ci.yml
+README.md

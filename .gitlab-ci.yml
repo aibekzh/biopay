@@ -1,0 +1,167 @@
+variables:
+  PROD_DIR: /var/www/module_authorization-2.0
+  STAGE_DIR: /var/www/module_authorization-2.0_staging
+  BUILD_DIR: /var/www/builds/$CI_PROJECT_PATH
+  REPOSITORY: adata-modules/module_authorization-2.0.git
+  RSYNC_OPTIONS: "-azcCh --chmod=0755 --executability --progress --delete-before"
+  RSYNC_INCLUDE_LIST: data/deployment/include.txt
+  RSYNC_EXCLUDE_LIST: data/deployment/exclude.txt
+
+.build: &build
+  stage: build
+  before_script:
+    - echo $BUILD_DIR
+    - echo $BRANCH
+    - >
+      if ! [ -d "$BUILD_DIR" ]; then
+        sudo -u www-data mkdir -p $BUILD_DIR
+        sudo chown -R www-data:www-data $BUILD_DIR
+        sudo -u www-data git clone https://deploy:xzKm1Q6k7t287eWAs2a@gitlab.adata.kz/"$REPOSITORY" $BUILD_DIR -b $BRANCH
+      fi
+  script:
+    - cd $BUILD_DIR
+    - sudo -u www-data git reset --hard
+    - sudo -u www-data git pull origin $BRANCH
+    - sudo -u www-data composer install
+    - sudo -u www-data php artisan swagger-lume:generate
+
+
+.unit_test: &unit_test
+  stage: test
+  script:
+    - cd $BUILD_DIR
+    - >
+      if [[ -L ".env" ]]; then
+        sudo -u www-data unlink .env
+      fi
+    - sudo -u www-data ln -s .env.testing .env
+    - sudo -u www-data vendor/bin/phpunit --configuration phpunit.xml --log-junit phpunit-report.xml
+    - sudo -u www-data unlink .env
+
+.deploy: &deploy
+  stage: deploy
+  script:
+    - echo $DIR
+    - cd $DIR
+    - sudo -u www-data rsync $RSYNC_OPTIONS --include-from=$BUILD_DIR/$RSYNC_INCLUDE_LIST --exclude-from=$BUILD_DIR/$RSYNC_EXCLUDE_LIST $BUILD_DIR/ .
+
+stages:
+  - build
+  - test
+  - deploy
+  - env
+
+build_dev_office:
+  <<: *build
+  tags:
+    - web-3-node-dev
+  variables:
+    BRANCH: release
+  only:
+    - release
+
+unit_test_dev:
+  <<: *unit_test
+  tags:
+    - web-3-node-dev
+  only:
+    - release
+
+deploy_dev_office:
+  <<: *deploy
+  tags:
+    - web-3-node-dev
+  variables:
+    DIR: /var/www/adata-modules/module_authorization-2.0
+  only:
+    - release
+  environment:
+    name: development
+    url: http://192.168.1.178:83
+
+environment_dev_office:
+  stage: env
+  tags:
+    - web-3-node-dev
+  variables:
+    ENVIRONMENT: .env.development
+    DIR: /var/www/adata-modules/module_authorization-2.0
+  script:
+    - sudo -u www-data cp $BUILD_DIR/$ENVIRONMENT $DIR/.env
+  only:
+    - release
+  environment:
+    name: development
+    url: http://192.168.1.178
+
+build_office:
+  <<: *build
+  tags:
+    - api-modules-node-office
+  variables:
+    BRANCH: master
+  only:
+    - master
+
+build_ps:
+  <<: *build
+  tags:
+    - api-modules-node-ps
+  variables:
+    BRANCH: master
+  only:
+    - master
+
+#deploy_staging_office:
+#  <<: *deploy
+#  tags:
+#    - api-modules-node-office
+#  variables:
+#    DIR: $STAGE_DIR
+#  dependencies:
+#    - build_office
+#  needs:
+#    - job: build_office
+#  only:
+#    - master
+#
+#deploy_production_office:
+#  <<: *deploy
+#  tags:
+#    - api-modules-node-office
+#  variables:
+#    DIR: $PROD_DIR
+#  dependencies:
+#    - build_office
+#  when: manual
+#  needs:
+#    - job: build_office
+#  only:
+#    - master
+#
+#deploy_staging_ps:
+#  <<: *deploy
+#  tags:
+#    - api-modules-node-ps
+#  variables:
+#    DIR: $STAGE_DIR
+#  dependencies:
+#    - build_ps
+#  needs:
+#    - job: build_ps
+#  only:
+#    - master
+#
+#deploy_production_ps:
+#  <<: *deploy
+#  tags:
+#    - api-modules-node-ps
+#  variables:
+#    DIR: $PROD_DIR
+#  dependencies:
+#    - build_ps
+#  when: manual
+#  needs:
+#    - job: build_ps
+#  only:
+#    - master

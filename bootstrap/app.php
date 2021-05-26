@@ -2,6 +2,11 @@
 
 require_once __DIR__.'/../vendor/autoload.php';
 
+use Carbon\Carbon;
+use Dusterio\LumenPassport\LumenPassport;
+use Laravel\Passport\Passport as LaravelPassport;
+
+
 (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
     dirname(__DIR__)
 ))->bootstrap();
@@ -23,9 +28,9 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
-// $app->withFacades();
+ $app->withFacades();
 
-// $app->withEloquent();
+ $app->withEloquent();
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +52,7 @@ $app->singleton(
     Illuminate\Contracts\Console\Kernel::class,
     App\Console\Kernel::class
 );
+$app->alias('mail.manager', Illuminate\Contracts\Mail\Factory::class);
 
 /*
 |--------------------------------------------------------------------------
@@ -60,6 +66,10 @@ $app->singleton(
 */
 
 $app->configure('app');
+$app->configure('auth');
+$app->configure('cors');
+$app->configure('swagger-lume');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -72,13 +82,16 @@ $app->configure('app');
 |
 */
 
-// $app->middleware([
-//     App\Http\Middleware\ExampleMiddleware::class
-// ]);
+ $app->middleware([
+     Fruitcake\Cors\HandleCors::class,
+                  ]);
 
-// $app->routeMiddleware([
-//     'auth' => App\Http\Middleware\Authenticate::class,
-// ]);
+ $app->routeMiddleware([
+     'auth' => App\Http\Middleware\Authenticate::class,
+     'auth_partial' => \App\Http\Middleware\AuthPartial::class,
+     'cors' => \Fruitcake\Cors\HandleCors::class,
+
+ ]);
 
 /*
 |--------------------------------------------------------------------------
@@ -91,9 +104,27 @@ $app->configure('app');
 |
 */
 
-// $app->register(App\Providers\AppServiceProvider::class);
-// $app->register(App\Providers\AuthServiceProvider::class);
-// $app->register(App\Providers\EventServiceProvider::class);
+ $app->register(App\Providers\AppServiceProvider::class);
+ $app->register(App\Providers\AuthServiceProvider::class);
+ $app->register(App\Providers\EventServiceProvider::class);
+ $app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
+ $app->register(Laravel\Passport\PassportServiceProvider::class);
+ $app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
+ $app->register(Fruitcake\Cors\CorsServiceProvider::class);
+// $app->register(Dingo\Api\Provider\LumenServiceProvider::class);
+ $app->register(Illuminate\Redis\RedisServiceProvider::class);
+ $app->register(Illuminate\Notifications\NotificationServiceProvider::class);
+ $app->register(Illuminate\Mail\MailServiceProvider::class);
+ $app->register(\App\Providers\MailServiceProvider::class);
+ $app->register(Illuminate\Auth\Passwords\PasswordResetServiceProvider::class);
+ $app->register(\SwaggerLume\ServiceProvider::class);
+
+
+
+LumenPassport::routes($app);
+LaravelPassport::tokensExpireIn(Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN',15)));
+LaravelPassport::refreshTokensExpireIn(Carbon::now()->addMinutes(env('REFRESH_TOKEN_EXPIRE_IN',2880)));
+LaravelPassport::personalAccessTokensExpireIn(Carbon::now()->addMinutes(env('PERSONAL_ACCESS_TOKENS_EXPIRE_IN',86400)));
 
 /*
 |--------------------------------------------------------------------------

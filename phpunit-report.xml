@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="" tests="8" assertions="38" errors="0" warnings="0" failures="0" skipped="0" time="6.470202">
+    <testsuite name="Application Test Suite" tests="8" assertions="38" errors="0" warnings="0" failures="0" skipped="0" time="6.470202">
+      <testsuite name="ExampleTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/ExampleTest.php" tests="1" assertions="1" errors="0" warnings="0" failures="0" skipped="0" time="0.052053">
+        <testcase name="testExample" class="ExampleTest" classname="ExampleTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/ExampleTest.php" line="13" assertions="1" time="0.052053"/>
+      </testsuite>
+      <testsuite name="Unit\AuthControllerTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/Unit/AuthControllerTest.php" tests="7" assertions="37" errors="0" warnings="0" failures="0" skipped="0" time="6.418150">
+        <testcase name="test_can_register" class="Unit\AuthControllerTest" classname="Unit.AuthControllerTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/Unit/AuthControllerTest.php" line="42" assertions="3" time="0.520362"/>
+        <testcase name="test_can_login" class="Unit\AuthControllerTest" classname="Unit.AuthControllerTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/Unit/AuthControllerTest.php" line="55" assertions="7" time="0.592157"/>
+        <testcase name="test_can_check" class="Unit\AuthControllerTest" classname="Unit.AuthControllerTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/Unit/AuthControllerTest.php" line="67" assertions="11" time="0.347710"/>
+        <testcase name="test_can_refresh_token" class="Unit\AuthControllerTest" classname="Unit.AuthControllerTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/Unit/AuthControllerTest.php" line="83" assertions="7" time="0.699513"/>
+        <testcase name="test_can_send_verify_message" class="Unit\AuthControllerTest" classname="Unit.AuthControllerTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/Unit/AuthControllerTest.php" line="95" assertions="3" time="1.856052"/>
+        <testcase name="test_can_send_reset_message" class="Unit\AuthControllerTest" classname="Unit.AuthControllerTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/Unit/AuthControllerTest.php" line="101" assertions="3" time="1.982559"/>
+        <testcase name="test_can_logout" class="Unit\AuthControllerTest" classname="Unit.AuthControllerTest" file="/home/tkoishybay/PhpstormProjects/module_auth/module_authorization-2.0/tests/Unit/AuthControllerTest.php" line="107" assertions="3" time="0.419796"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

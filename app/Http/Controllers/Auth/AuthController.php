@@ -1,0 +1,296 @@
+<?php
+
+namespace App\Http\Controllers\Auth;
+
+use App\Exceptions\OAuthExceptionHandler;
+use App\Helpers\AuthHelper;
+use App\Models\User;
+use App\Repository\UsersApiRepository;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Laravel\Passport\Exceptions\OAuthServerException;
+use Laravel\Passport\Http\Controllers\AccessTokenController;
+use Psr\Http\Message\ServerRequestInterface;
+
+class AuthController extends AccessTokenController
+{
+
+    /**
+     * @OA\Post(
+     ** path="/api/register",
+     *   tags={"auth"},
+     *   summary="Sign up",
+     *   operationId="register",
+     *
+     *  @OA\Parameter(
+     *      name="name",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *  @OA\Parameter(
+     *      name="email",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="password",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Parameter(
+     *      name="password_confirmation",
+     *      in="query",
+     *      required=true,
+     *      @OA\Schema(
+     *           type="string"
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=201,
+     *       description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Пользователь успешно зарегистрирован"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=400,
+     *      description="Bad Request"
+     *   ),
+     *)
+     **/
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function register(Request $request, ServerRequestInterface $req)
+    {
+            $validator = Validator::make($request->all(),[
+                'name' => 'required',
+                'phone_number' => 'required|string|email:rfc,dns|max:255|unique:users',
+                'password' => 'required|string|min:8|regex:/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/|confirmed'
+            ], [
+                'required' => ':attribute должно быть заполнено.',
+                'string' => ':attribute является строкой.',
+                'phone_number' => ':attribute должен быть действительным адресом электронной почты.',
+                'max' => ':attribute не может содержать больше :max символов',
+                'unique' => ':attribute уже занята!',
+                'min' => ':attribute должен содержать не менее :min символов.',
+                'regex' => ':attribute должен состоять из восьми или более символов латинского алфавита, содержать заглавные и строчные буквы, цифры',
+                'confirmed' => ':attribute не совпадает.',
+
+            ], [
+                'name' => 'Имя',
+                'phone_number' => 'Номер телефона',
+                'password' => 'Пароль'
+            ]);
+
+            if(!$validator->fails()){
+                $user           = new User;
+                $user->phone_number     = $request->phone_number;
+                $user->email    = $request->email;
+                $user->password = Hash::make($request->password);
+                $user->balance = 0;
+                $user->remember_token = 0;
+                $user->save();
+                try{
+
+//                    if(config('app.env') != 'testing') {
+//                        $apiService = new UsersApiRepository();
+//                        $apiService->bindBaseRate($user->id);
+//                    }
+
+                    $request->merge([
+                        "username" => $user->phone_number
+                    ]);
+
+                    $auth = (new AuthHelper($this->server, $this->tokens, $this->jwt))->issueToken($req, $request);
+
+                    $request->merge(
+                        [
+                            'refresh_token' => json_decode($auth['result'])->refresh_token
+                        ]
+                    );
+
+//                    $user->sendEmailVerificationNotification();
+                }catch (\Exception $exception){
+                    $user->delete();
+
+                    if ($exception instanceof OAuthServerException) {
+                        $message = OAuthExceptionHandler::handle($exception);
+
+                        return response()->json(
+                            [
+                                'success' => false,
+                                'data'    => "",
+                                'message' => $message['message']
+                            ], $message['code']
+                        );
+                    }
+
+                    return response()->json(
+                        [
+                            'success' => false,
+                            'data'    => "",
+                            'message' => $exception->getMessage()
+                        ], 500
+                    );
+                }
+
+                return response()->json(
+                    [
+                        'success' => true,
+                        'data'    => json_decode($auth['result']),
+                        'message' => 'Пользователь успешно зарегистрирован'
+                    ], 201,[],JSON_UNESCAPED_UNICODE
+                );
+            }
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'data'    => "",
+                    'message' => $validator->errors()
+                ], 400
+            );
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/logout",
+     *   operationId="logout",
+     *   tags={"auth"},
+     *   security={ {"bearer": {} }},
+     *   summary="Logout",
+     *   description="Logout user",
+     *
+     *   @OA\Response(
+     *      response=200,
+     *      description="Success",
+     *      @OA\JsonContent(
+     *          type="object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="message", type="string", example="Успешный выход из системы"),
+     *      )
+     *   ),
+     *   @OA\Response(
+     *      response=401,
+     *      description="Unauthenticated",
+     *      @OA\JsonContent(
+     *          type = "object",
+     *          @OA\Property(property="success", type="boolean", example="false"),
+     *          @OA\Property(property="message", type="string", example="Вы не авторизованы"),
+     *      ),
+     *   ),
+     *)
+     **/
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function logout(Request $request)
+    {
+        try{
+            $request->user()
+                ->tokens
+                ->each(function ($token, $key) {
+                    $this->revokeAccessAndRefreshTokens($token->id);
+                });
+
+            Cache::forget("access_token/".$request->bearerToken());
+            Cache::forget("user_id/".$request->user()->id);
+            return response()->json(
+                [
+                    'success' => true,
+                    'data'    => "",
+                    'message' => 'Успешный выход из системы',
+                ],200,[],JSON_UNESCAPED_UNICODE
+            );
+        }catch (\Exception $exception){
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'data'    => "",
+                    'message' => $exception->getMessage(),
+                ],500
+            );
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *   path="/api/check",
+     *   operationId="check",
+     *   tags={"auth"},
+     *   security={ {"bearer": {} }},
+     *   summary="Check the User",
+     *   description="Check",
+     *
+     *   @OA\Response(
+     *      response=200,
+     *      description="Success",
+     *      @OA\JsonContent(
+     *          type = "object",
+     *          @OA\Property(property="success", type="boolean", example="true"),
+     *          @OA\Property(property="data", type="object", example={"id":354,"name": "test", "email": "test@test.com", "email_verified_at": null, "balance": 0, "remember_token": null, "created_at": "2021-02-24T03:30:57.000000Z","updated_at": "2021-02-24T03:30:57.000000Z"}),
+     *      ),
+     *   ),
+     *   @OA\Response(
+     *      response=401,
+     *      description="Unauthenticated",
+     *      @OA\JsonContent(
+     *          type = "object",
+     *          @OA\Property(property="success", type="boolean", example="false"),
+     *          @OA\Property(property="message", type="string", example="Вы не авторизованы"),
+     *      ),
+     *   ),
+     *)
+     **/
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function user(Request $request)
+    {
+        try{
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'data'    => $request->user(),
+                    'message' => "",
+                ]
+            );
+        }catch (\Exception $exception){
+
+            return response()->json(
+                [
+                    'success' => false,
+                    'data'    => false,
+                    'message' => $exception->getMessage(),
+                ],500
+            );
+        }
+    }
+
+    protected function revokeAccessAndRefreshTokens($tokenId) {
+        $tokenRepository = app('Laravel\Passport\TokenRepository');
+        $refreshTokenRepository = app('Laravel\Passport\RefreshTokenRepository');
+
+        $tokenRepository->revokeAccessToken($tokenId);
+        $refreshTokenRepository->revokeRefreshTokensByAccessTokenId($tokenId);
+    }
+}
