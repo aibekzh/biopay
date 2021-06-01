@@ -5,75 +5,55 @@ namespace App\Helpers;
 
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 
 class HttpClient
 {
     private $client;
 
-    public function __construct($host, $port)
+    public function __construct()
     {
         $this->client = new Client(
             [
-                "base_uri" => env('MODULE_USERS_SCHEME').'://'.$host.':'.$port ?? ''.'/'
+                "base_uri" => env('FACETEC_API') . '/',
             ]
         );
     }
 
-
     /**
-     * @param $uri
+     * @param       $uri
      * @param array $params
      * @param array $headers
+     *
      * @return ResponseInterface
+     * @throws GuzzleException
      */
-    public function get($uri, $params = [], $headers = []): ResponseInterface
+    public function get($uri, array $params = [], array $headers = []): ResponseInterface
     {
-        return $this->client->post($uri, [
-            "json"      => $params,
-            "headers"   => $headers
-        ]);
+        return $this->client->get(
+            $uri, [
+            "query"   => $params,
+            "headers" => $headers
+        ]
+        );
     }
 
     /**
-     * @param $uri
+     * @param       $uri
      * @param array $params
      * @param array $headers
+     *
      * @return ResponseInterface
+     * @throws GuzzleException
      */
-    public function delete($uri, $params = [], $headers = []): ResponseInterface
+    public function post($uri, array $params = [], array $headers = []): ResponseInterface
     {
-        return $this->client->put($uri, [
-            "json"      => $params,
-            "headers"   => $headers
-        ]);
-    }
-
-    /**
-     * @param $uri
-     * @param array $params
-     * @param array $headers
-     * @return ResponseInterface
-     */
-    public function post($uri, $params = [], $headers = []): ResponseInterface
-    {
-        return $this->client->post($uri, [
-            "json"      => $params,
-            "headers"   => $headers
-        ]);
-    }
-
-    /**
-     * @param $uri
-     * @param array $params
-     * @param array $headers
-     * @return ResponseInterface
-     */
-    public function put($uri, $params = [], $headers = []): ResponseInterface
-    {
-        return $this->client->put($uri, [
-            "json"      => $params,
-            "headers"   => $headers
-        ]);
+        return $this->client->post(
+            $uri, [
+                    "json"    => $params,
+                    "headers" => $headers,
+                ]
+        );
     }
 }

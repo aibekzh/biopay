@@ -28,7 +28,7 @@ $router->delete('api/user/self',
 );
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return env('APP_NAME');
 });
 
 //$router = app('Dingo\Api\Routing\Router');
@@ -36,29 +36,38 @@ $router->get('/', function () use ($router) {
     $router->group(['prefix'=>'oauth'],function ($router){
         $router->post('token','\Laravel\Passport\Http\Controllers\AccessTokenController@issueToken');
     });
-    $router->post('register','App\Http\Controllers\Auth\AuthController@register');
-    $router->post('login','App\Http\Controllers\Auth\AccessController@issueToken');
-    $router->post('refresh','App\Http\Controllers\Auth\AccessController@refreshToken');
-    $router->post('password/email',
-               [
-                'as'=>'password.email',
-                'uses'=>'App\Http\Controllers\Auth\ForgotPasswordController@forgot',
-               ]);
 
-    $router->get('email/verify/{id}',
-                [
-                    'as'   => 'verification.verify',
-                    'uses' => 'App\Http\Controllers\Auth\VerificationController@verify',
-                ]);
 
-    $router->group(['namespace'=>'App\Http\Controllers','middleware'=>['auth:api']],function ($router){
-        $router->get('access/cookie', 'Auth\AccessController@getCookie');
-        $router->get('access', 'Auth\AccessController@check');
-        $router->get('check','Auth\AuthController@user');
-        $router->post('password/change', 'Auth\ForgotPasswordController@change');
+    $router->group(['namespace'=>'Auth','prefix'=>'api'],function ($router) {
+
+        $router->post('user/register', 'AuthController@register');
+        $router->post('login', 'AccessController@issueToken');
+        $router->post('enterprise/register', 'AuthController@registerEnterprise');
+        $router->post('refresh', 'AccessController@refreshToken');
+
+        $router->group(['middleware'=>['auth_partial']],function ($router){
+            $router->get('logout','AuthController@logout');
+        });
+
+    });
+    $router->group(['prefix'=>'api'],function ($router){
+        $router->get('biometrics/session','FaceMapController@session');
+
+        $router->group(['middleware'=>['auth:api']], function ($router){
+
+            $router->get('data','EnterpriseController@getData');
+            $router->get('enterprise/balance','EnterpriseController@getBalance');
+            $router->get('enterprise/income/history','EnterpriseController@getPaymentHistory');
+
+            $router->get('user/balance','UserController@getBalance');
+            $router->get('user/payment/history','UserController@getPaymentHistory');
+            $router->get('user/top-up/history','UserController@getTopUpHistory');
+            $router->post('user/balance/top-up','UserController@topUp');
+
+            $router->post('biometrics/enrollment', 'FaceMapController@enroll');
+            $router->post('biometrics/match', 'FaceMapController@match');
+            $router->post('pay', 'FaceMapController@pay');
+        });
     });
 
-    $router->group(['namespace'=>'App\Http\Controllers','middleware'=>['auth_partial']],function ($router){
-        $router->get('email/resend','Auth\VerificationController@resend');
-        $router->get('logout','Auth\AuthController@logout');
-    });
+

@@ -19,8 +19,7 @@ class CreateUsersTable extends Migration
             $table->text('phone_number')->unique();
             $table->text('password');
             $table->integer('balance');
-            $table->text('remember_token');
-            $table->text('face_map');
+            $table->text('face_map')->nullable();
             $table->timestamps();
         });
     }

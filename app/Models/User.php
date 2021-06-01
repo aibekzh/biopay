@@ -19,8 +19,7 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 class User extends Model implements  AuthenticatableContract, AuthorizableContract, MustVerifyEmail, CanResetPasswordContract
 {
     use HasApiTokens,Authenticatable, Authorizable, HasFactory, Notifiable, CanResetPassword;
-
-    protected $appends = ['has_verification'];
+    
 
     /**
      * The attributes that are mass assignable.
@@ -28,7 +27,7 @@ class User extends Model implements  AuthenticatableContract, AuthorizableContra
      * @var array
      */
     protected $fillable = [
-        'name', 'email'
+        'name', 'phone_number'
     ];
 
     /**
@@ -107,15 +106,19 @@ class User extends Model implements  AuthenticatableContract, AuthorizableContra
         $this->notify(new ResetPasswordNotification($token));
     }
 
-    public function getHasVerificationAttribute() {
-        $verification = UserVerification::query()->where('user_id', $this->id);
-        if ($verification->exists()) {
-            $verification = $verification->first();
-            if ($verification->is_user_verified) return true;
+//    public function getHasVerificationAttribute() {
+//        $verification = UserVerification::query()->where('user_id', $this->id);
+//        if ($verification->exists()) {
+//            $verification = $verification->first();
+//            if ($verification->is_user_verified) return true;
+//
+//            return false;
+//        }
+//
+//        return false;
+//    }
 
-            return false;
-        }
-
-        return false;
+    public function enterpriseData(){
+        return $this->hasOne(EnterpriseData::class,'user_id','id');
     }
 }

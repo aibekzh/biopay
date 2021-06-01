@@ -107,6 +107,13 @@ return [
         | Examples of Security definitions
         |--------------------------------------------------------------------------
         */
+
+        'Bearer' => [
+            'type' => 'http',
+            'description' => 'Enter JWT Bearer token _only_',
+            'scheme' => 'bearer',
+            'bearerFormat' => 'JWT',
+        ]
         /*
         'api_key_security_example' => [ // Unique name of security
             'type' => 'apiKey', // The type of the security scheme. Valid values are "basic", "apiKey" or "oauth2".

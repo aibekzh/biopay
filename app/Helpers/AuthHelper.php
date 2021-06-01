@@ -80,6 +80,7 @@ class AuthHelper
 
     public function authorization($request,$req){
 
+
         $result = $this->withErrorHandling(
             function () use ($request) {
                 return $this->convertResponse(
@@ -87,6 +88,7 @@ class AuthHelper
                 );
             }
         );
+
         $partial = false;
         $access_token = json_decode($result->content())->access_token;
         $refresh_token = json_decode($result->content())->refresh_token;
@@ -108,11 +110,20 @@ class AuthHelper
             $cookie->set('access_token', $access_token);
             $cookie->set('refresh_token', $refresh_token);
 
-            if (!is_null(\request()->user()->email_verified_at)) {
-                Cache::put("access_token/$access_token", $req->user()->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
-                Cache::put("user_id/".$req->user()->id, $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+            DB::table('user_access_tokens')->updateOrInsert(
+                [
+                    'user_id' => $req->user()->id
+                ],
+                [
+                    'access_token' => $access_token,
+                    'expires_in' => Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 30))
+                ],
+            );
+//            if (!is_null(\request()->user()->email_verified_at)) {
+//                Cache::put("access_token/$access_token", $req->user()->id, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
+//                Cache::put("user_id/".$req->user()->id, $access_token, Carbon::now()->addMinutes(env('TOKEN_EXPIRE_IN', 15)));
 
-            } else $partial = true;
+//            } else $partial = true;
         }
 
         return [

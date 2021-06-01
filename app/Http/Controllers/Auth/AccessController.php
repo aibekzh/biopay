@@ -107,7 +107,7 @@ class AccessController extends Controller
                 [
                     'success' => true,
                     'data'    => json_decode($auth['result']),
-                    'message' => "",
+                    'message' => $req->user()->type,
                 ], $auth['code']
             );
         } catch (\Exception $e) {
@@ -202,71 +202,5 @@ class AccessController extends Controller
                 ], 401
             );
         }
-    }
-
-
-    /**
-     * @OA\Get (
-     * path="/api/access",
-     * summary="Access",
-     * description="Check if token is alive",
-     * operationId="refresh",
-     * tags={"access"},
-     * security={ {"bearer": {} }},
-     *   @OA\Response(
-     *      response=200,
-     *       description="Success, returns user's id",
-     *   ),
-     *   @OA\Response(
-     *      response=400,
-     *      description="Bad Request"
-     *   ),
-     * )
-     */
-    public function check(Request $request) {
-
-        return response()->json(
-            [
-                "success"   => true,
-                "data"      => ["user_id" => $request->user_id],
-                "message"   => ""
-            ]
-        );
-    }
-
-    /**
-     * @OA\Get(
-     * path="/api/access/cookie",
-     * summary="Access",
-     * description="Check token is alive from cookie",
-     * operationId="check.cookie",
-     * tags={"access"},
-     * security={ {"bearer": {} }},
-     *   @OA\Response(
-     *      response=200,
-     *       description="Success, returns user's id",
-     *   ),
-     *   @OA\Response(
-     *      response=400,
-     *      description="Bad Request"
-     *   ),
-     * )
-     */
-    public function getCookie(Request $request): JsonResponse
-    {
-        $cookie = new CookieStorage();
-        $diff = Carbon::parse($cookie->get('token_create_time'))->diffInSeconds(Carbon::now());
-
-        return response()->json(
-            [
-                "success"   => true,
-                "data"      => [
-                    "expire_in" => $diff,
-                    "access_token" => $cookie->get('access_token'),
-                    "refresh_token" => $cookie->get('refresh_token'),
-                ],
-                "message"   => ""
-            ]
-        );
     }
 }

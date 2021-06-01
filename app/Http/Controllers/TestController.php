@@ -3,8 +3,6 @@
 
 namespace App\Http\Controllers;
 
-
-
 use App\Helpers\CookieStorage;
 use App\Models\User;
 use Illuminate\Http\Request;

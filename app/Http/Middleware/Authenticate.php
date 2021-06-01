@@ -2,10 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use Carbon\Carbon;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as Auth;
 use App\Helpers\CookieStorage;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use function PHPUnit\Framework\isNull;
 
 
@@ -43,14 +45,13 @@ class Authenticate
     {
         try {
             $check = $this->checkAuth($request);
-
-            if (!$check['success']) {
+            if (!$check) {
                 $this->cookieDelete("access_token");
 
                 return response()->json(
                     [
                         'success' => false,
-                        'data'    => ['conflict' => $check['conflict']],
+                        'data'    => null,
                         'message' => 'Вы не авторизованы',
                     ], 401
                 );
@@ -77,44 +78,38 @@ class Authenticate
         $cookie->delete($key);
     }
 
-    static function checkAuth($request): array
+    static function checkAuth($request): bool
     {
         $bearer = $request->bearerToken();
-
         if (is_null($bearer)) {
 
             if ($request->cookie('access_token') != null) {
                 $request->headers->set('Authorization', 'Bearer ' . $request->cookie('access_token'));
                 $bearer = $request->bearerToken();
-            }else{
-                return [
-                    'conflict'   => false,
-                    'success'    => false
-                ];
+            } else {
+                return false;
             }
         }
 
-        if (is_null($bearer))  return [
-                'conflict'   => false,
-                'success'    => false
-            ];
+        if (is_null($bearer)) {
+            return false;
+        }
 
-        $user_id        = Cache::get("access_token/".$bearer);
-        $second_token   = Cache::get("user_id/".$user_id);
+        $userAccessToken = DB::table('user_access_tokens')
+                             ->where('access_token',$bearer)
+                             ->first()
+        ;
+//        dd($userAccessToken);
+        if (is_null($userAccessToken)) {
+            return false;
+        }
+        $user_id = $userAccessToken->user_id;;
+        if (Carbon::parse($userAccessToken->expires_in) <= Carbon::now()){
+            return false;
+        };
 
-        if (is_null($user_id) || is_null($second_token)) return [
-            'conflict'   => false,
-            'success'    => false
-        ];
-        elseif ($bearer != $second_token) return [
-        'conflict'   => true,
-        'success'    => false
-        ];
         $request->merge(["user_id" => $user_id]);
 
-        return [
-            'conflict'   => false,
-            'success'    => true
-        ];
+        return true;
     }
 }
