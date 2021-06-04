@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateUsersTable extends Migration
+class CreateUserRefreshTokensTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,10 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('user_refresh_tokens', function (Blueprint $table) {
             $table->id()->autoIncrement();
-            $table->text('name');
-            $table->text('email')->unique();
-            $table->text('password');
-            $table->integer('balance');
-            $table->boolean('face_face_map')->default('false');
-            $table->text('type');
+            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
+            $table->text('refresh_token')->unique();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent();
         });
@@ -33,6 +29,6 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('user_refresh_tokens');
     }
 }
